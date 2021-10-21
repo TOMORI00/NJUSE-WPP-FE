@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Login from '../views/Login';
+import Home from '../views/Home';
 
 Vue.use(Router);
 
@@ -9,12 +9,24 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/login',
+      redirect: '/home',
     },
     {
-      path: '/login',
-      name: 'LoginPage',
-      component: Login,
+      path: '/home',
+      name: 'Home',
+      component: Home,
+      // redirect: '/check',
+      // 判断是否需要拦截
+      meta: {
+        requireAuth: true,
+      },
+      children: [
+        // {
+        //   path: '/check',
+        //   name: 'AppCheck',
+        //   component: Check,
+        // },
+      ],
     },
   ],
 });

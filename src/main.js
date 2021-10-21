@@ -10,22 +10,6 @@ import router from './router';
 Vue.use(Antd);
 Vue.config.productionTip = false;
 
-// 用来设置访问权限
-router.beforeEach((to, from, next) => {
-  if (to.meta.requireAuth) {
-    if (store.state.user.username) {
-      next();
-    } else {
-      next({
-        path: 'login',
-        query: { redirect: to.fullPath },
-      });
-    }
-  } else {
-    next();
-  }
-});
-
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
