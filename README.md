@@ -1,4 +1,4 @@
-# frontend_seiii
+# frontend_practice
 
 > A Vue.js project
 
