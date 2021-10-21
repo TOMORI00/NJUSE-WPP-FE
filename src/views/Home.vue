@@ -2,7 +2,7 @@
   <div id="components-layout-demo-basic">
     <a-layout>
       <a-layout-header>
-        <h3 class="title">举头三尺天气晴</h3>
+        <h3 class="title" @click="test">裁判文书网</h3>
         <img
           src="https://ydl8023.oss-cn-beijing.aliyuncs.com/IMG_1297.JPG"
           id="avator"
@@ -25,25 +25,25 @@
           >
             <a-menu-item key="1">
               <a-icon type="check" />
-              <span>打卡</span>
+              <span>条目1</span>
             </a-menu-item>
             <a-menu-item key="2">
               <a-icon type="edit" />
-              <span>记账</span>
+              <span>条目2</span>
             </a-menu-item>
             <a-sub-menu key="sub1">
               <span slot="title">
                 <a-icon type="setting" />
-                <span>反思</span>
+                <span>条目3</span>
               </span>
               <a-menu-item key="3">
-                打卡一览
+                条目3.1
               </a-menu-item>
               <a-menu-item key="4">
-                记账一览
+                条目3.2
               </a-menu-item>
               <a-menu-item key="5">
-                相册
+                条目3.3
               </a-menu-item>
             </a-sub-menu>
           </a-menu>
@@ -76,6 +76,11 @@ export default {
   methods: {
     handleClick(e) {
       console.log(e);
+    },
+    test() {
+      this.$api.judgement.login().then((res) => {
+        console.log('hi', res);
+      });
     },
   },
 };

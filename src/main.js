@@ -6,9 +6,12 @@ import Antd from 'ant-design-vue';
 import store from './store';
 import App from './App';
 import router from './router';
+import api from './api';
 
 Vue.use(Antd);
 Vue.config.productionTip = false;
+
+Vue.prototype.$api = api; // 将api挂载到vue的原型上
 
 /* eslint-disable no-new */
 new Vue({
