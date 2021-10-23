@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Home from '../views/Home';
+import Gudgements from '../views/Gudgements';
 
 Vue.use(Router);
 
@@ -15,17 +16,13 @@ export default new Router({
       path: '/home',
       name: 'Home',
       component: Home,
-      // redirect: '/check',
-      // 判断是否需要拦截
-      meta: {
-        requireAuth: true,
-      },
+      redirect: '/judgements',
       children: [
-        // {
-        //   path: '/check',
-        //   name: 'AppCheck',
-        //   component: Check,
-        // },
+        {
+          path: '/judgements',
+          name: 'Gudgements',
+          component: Gudgements,
+        },
       ],
     },
   ],

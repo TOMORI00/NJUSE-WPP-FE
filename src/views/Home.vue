@@ -2,7 +2,7 @@
   <div id="components-layout-demo-basic">
     <a-layout>
       <a-layout-header>
-        <h3 class="title" @click="test">裁判文书网</h3>
+        <h3 class="title">裁判文书网</h3>
         <img
           src="https://ydl8023.oss-cn-beijing.aliyuncs.com/IMG_1297.JPG"
           id="avator"
@@ -18,41 +18,30 @@
         >
           <a-menu
             :default-selected-keys="['1']"
-            :open-keys.sync="openKeys"
+            :default-open-keys="['sub1']"
             mode="inline"
             theme="dark"
             @click="handleClick"
           >
-            <a-menu-item key="1">
-              <a-icon type="check" />
-              <span>条目1</span>
-            </a-menu-item>
-            <a-menu-item key="2">
-              <a-icon type="edit" />
-              <span>条目2</span>
-            </a-menu-item>
             <a-sub-menu key="sub1">
               <span slot="title">
                 <a-icon type="setting" />
-                <span>条目3</span>
+                <span>违规案例库</span>
               </span>
+              <a-menu-item key="1">
+                裁判文书库
+              </a-menu-item>
+              <a-menu-item key="2">
+                行政处罚管理
+              </a-menu-item>
               <a-menu-item key="3">
-                条目3.1
-              </a-menu-item>
-              <a-menu-item key="4">
-                条目3.2
-              </a-menu-item>
-              <a-menu-item key="5">
-                条目3.3
+                违规案例搜索
               </a-menu-item>
             </a-sub-menu>
           </a-menu>
         </a-layout-sider>
         <a-layout-content
-          :style="{
-            overflow: 'auto',
-            height: '92vh',
-          }"
+          style="overflow: scroll; height: 92vh; min-width: 710px; background-color: #fff;"
         >
           <router-view></router-view>
         </a-layout-content>
@@ -65,7 +54,6 @@
 export default {
   data() {
     return {
-      openKeys: [],
     };
   },
   watch: {
@@ -77,18 +65,13 @@ export default {
     handleClick(e) {
       console.log(e);
     },
-    test() {
-      this.$api.judgement.login().then((res) => {
-        console.log('hi', res);
-      });
-    },
   },
 };
 </script>
 
 <style>
 #components-layout-demo-basic .ant-layout-header {
-  background-color: #fff;
+  background-color: rgb(248, 236, 236);
   height: 8vh;
   position: relative;
 }
@@ -100,8 +83,8 @@ export default {
 }
 #avator {
   float: right;
-  width: 60px;
-  height: 60px;
+  width: 8vh;
+  height: 8vh;
   right: 20px;
   position: absolute;
   top: 50%;
@@ -111,5 +94,7 @@ export default {
 .title {
   position: absolute;
   left: 36px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style>
