@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Home from '../views/Home';
-import Gudgements from '../views/Gudgements';
+import Judgements from '../views/Judgements';
 
 Vue.use(Router);
 
@@ -20,8 +20,8 @@ export default new Router({
       children: [
         {
           path: '/judgements',
-          name: 'Gudgements',
-          component: Gudgements,
+          name: 'Judgements',
+          component: Judgements,
         },
       ],
     },

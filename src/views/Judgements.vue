@@ -1,34 +1,34 @@
 <template>
   <div>
     <div>
-      <a-form :form="form" layout="inline" class="searchBar">
+      <a-form :form="form" class="searchBar" layout="inline">
         <a-form-item label="案件名称">
           <a-input
-            style="width: 360px"
             v-decorator="[
-              'caseName',
+              'searchLine',
               {
                 rules: [{ required: true, message: '请输入案件名称' }],
               },
             ]"
+            style="width: 360px"
           />
         </a-form-item>
         <a-form-item
           :wrapper-col="formItemLayout.wrapperCol"
           style="margin-left: 30px"
         >
-          <a-button type="primary">
+          <a-button type="primary" @click="query">
             查询
           </a-button>
         </a-form-item>
         <a-form-item :wrapper-col="formItemLayout.wrapperCol">
-          <a-button type="primary">
+          <a-button type="primary" @click="resetSearchLine">
             重置
           </a-button>
         </a-form-item>
       </a-form>
     </div>
-    <a-divider />
+    <a-divider/>
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
         <a-button type="primary">
@@ -45,19 +45,21 @@
         </a-button>
       </div>
       <a-table
+        :columns="columns"
+        :data-source="data"
         :row-selection="{
           selectedRowKeys: selectedRowKeys,
           onChange: onSelectChange,
           type: 'radio',
         }"
-        :columns="columns"
-        :data-source="data"
       />
     </div>
   </div>
 </template>
 
 <script>
+import judgement from '../api/judgement';
+
 const formItemLayout = {
   labelCol: { span: 4 },
   wrapperCol: { span: 10 },
@@ -94,6 +96,7 @@ for (let i = 0; i < 46; i++) {
 export default {
   data() {
     return {
+      caseName: 'hhh',
       data,
       formItemLayout,
       form: this.$form.createForm(this, { name: 'judgementSearch' }),
@@ -108,6 +111,21 @@ export default {
     onSelectChange(selectedRowKeys) {
       console.log('selectedRowKeys changed: ', selectedRowKeys, selectedRowKeys[0], data[selectedRowKeys[0]]);
       this.selectedRowKeys = selectedRowKeys;
+    },
+    resetSearchLine() {
+      this.form.setFieldsValue({
+        searchLine: '',
+      });
+    },
+    query() {
+      this.form.validateFields((err, values) => {
+        if (!err) {
+          const para = {
+            title: values.searchLine,
+          };
+          judgement.queryAPI(para);
+        }
+      });
     },
   },
 };
