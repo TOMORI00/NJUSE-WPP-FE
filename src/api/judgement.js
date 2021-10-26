@@ -7,52 +7,28 @@ import axios from '../request/http'; // 导入http中创建的axios实例
 
 const judgement = {
   // 分页获取文书
-  getPageAPI(para) {
-    return axios({
-      url: 'http://127.0.0.1:4523/mock/441026/api/judgement/getPage',
-      method: 'POST',
-      para,
-    });
+  getPageAPI(data) {
+    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/getPage', data);
   },
   // 按条件分页检索
-  queryAPI(para) {
-    return axios({
-      url: '\thttp://127.0.0.1:4523/mock/441026/api/judgement/query',
-      method: 'POST',
-      para,
-    });
+  queryAPI(data) {
+    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/query', data);
   },
   // 新建裁判文书
-  createAPI(para) {
-    return axios({
-      url: 'http://127.0.0.1:4523/mock/441026/api/judgement/create',
-      method: 'POST',
-      para,
-    });
+  createAPI(data) {
+    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/create', data);
   },
   // 删除裁判文书
-  deleteAPI(para) {
-    return axios({
-      url: 'http://127.0.0.1:4523/mock/441026/api/judgement/delete',
-      method: 'POST',
-      para,
-    });
+  deleteAPI(data) {
+    return axios.delete('http://127.0.0.1:4523/mock/441026/api/judgement/delete', { params: { id: data } });
   },
   // 发布裁判文书
-  publishAPI(para) {
-    return axios({
-      url: 'http://127.0.0.1:4523/mock/441026/api/judgement/publish',
-      method: 'POST',
-      para,
-    });
+  publishAPI(data) {
+    return axios.get('http://127.0.0.1:4523/mock/441026/api/judgement/publish', { params: { id: data } });
   },
   // 修改裁判文书
-  modifyAPI(para) {
-    return axios({
-      url: 'http://127.0.0.1:4523/mock/441026/api/judgement/modify',
-      method: 'POST',
-      para,
-    });
+  modifyAPI(data) {
+    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/modify', data);
   },
 };
 

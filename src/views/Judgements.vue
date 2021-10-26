@@ -1,11 +1,11 @@
 <template>
   <div>
     <div>
-      <a-form :form="form" class="searchBar" layout="inline">
+      <a-form :form="searchForm" class="searchBar" layout="inline">
         <a-form-item label="案件名称">
           <a-input
             v-decorator="[
-              'searchLine',
+              'title',
               {
                 rules: [{ required: true, message: '请输入案件名称' }],
               },
@@ -31,16 +31,53 @@
     <a-divider/>
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
-        <a-button type="primary">
+        <a-button type="primary" @click="toCreate">
           新建
         </a-button>
-        <a-button type="primary">
+        <a-modal :title="formTitle"
+                 :visible="visibility_commonModel"
+                 cancel-text="取消"
+                 ok-text="确认"
+                 @cancel="handleModelCancel"
+                 @ok="handleModelOK">
+          <a-form :form="commonForm">
+            <a-form-item label="案件标题">
+              <a-input v-decorator="[ 'title', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
+                       placeholder="请输入案件标题"/>
+            </a-form-item>
+            <a-form-item label="案件类型">
+              <a-input v-decorator="[ 'type', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
+                       placeholder="请输入案件类型"/>
+            </a-form-item>
+            <a-form-item label="法院名称">
+              <a-input v-decorator="[ 'court', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
+                       placeholder="请输入法院名称"/>
+            </a-form-item>
+            <a-form-item label="案由">
+              <a-input v-decorator="[ 'cause', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
+                       placeholder="请输入案由"/>
+            </a-form-item>
+            <a-form-item label="案件正文">
+              <a-upload v-decorator="[ 'file',{
+                          valuePropName: 'fileList',
+                          getValueFromEvent: normFile,
+                          rules: [{required: true, message: '请选择文件'}]
+                        } ]"
+                        :before-upload="beforeUpload"
+                        :show-upload-list="{showRemoveIcon:false}"
+              >
+                <a-button>{{ uploadTip }}</a-button>
+              </a-upload>
+            </a-form-item>
+          </a-form>
+        </a-modal>
+        <a-button type="primary" @click="toModify">
           修改
         </a-button>
-        <a-button type="primary">
+        <a-button type="primary" @click="del">
           删除
         </a-button>
-        <a-button type="primary">
+        <a-button type="primary" @click="publish">
           发布
         </a-button>
       </div>
@@ -52,6 +89,7 @@
           onChange: onSelectChange,
           type: 'radio',
         }"
+        :rowKey="(record,index)=>index"
       />
     </div>
   </div>
@@ -60,6 +98,10 @@
 <script>
 import judgement from '../api/judgement';
 
+const formTitle = '新建条目';
+const rowCount = 10;
+const uploadTip = '上传正文文件';
+const fileList = [];
 const formItemLayout = {
   labelCol: { span: 4 },
   wrapperCol: { span: 10 },
@@ -96,36 +138,142 @@ for (let i = 0; i < 46; i++) {
 export default {
   data() {
     return {
-      caseName: 'hhh',
+      formTitle,
+      uploadTip,
+      commonForm: this.$form.createForm(this, { name: 'judgementCreate' }),
+      fileList,
+      caseName: '',
+      visibility_commonModel: false,
       data,
       formItemLayout,
-      form: this.$form.createForm(this, { name: 'judgementSearch' }),
+      searchForm: this.$form.createForm(this, { name: 'judgementSearch' }),
       columns,
       selectedRowKeys: [], // Check here to configure the default column
     };
   },
+  mounted() {
+    this.getPage(rowCount, 0);
+  },
   methods: {
-    /**
-     * todo: 传进来的这个参数是具体点击的某一行的信息，拿着这个信息再来进行后续处理(删、改)
-     */
     onSelectChange(selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys, selectedRowKeys[0], data[selectedRowKeys[0]]);
       this.selectedRowKeys = selectedRowKeys;
     },
     resetSearchLine() {
-      this.form.setFieldsValue({
-        searchLine: '',
+      this.searchForm.setFieldsValue({
+        title: '',
       });
     },
+    getPage(pageSize, pageNum) {
+      judgement.getPageAPI({ pageSize, pageNum })
+        .then((res) => {
+          // todo 分页查询 返回值
+          console.log(res.data.data);
+          this.data = res.data.data;
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
+    },
     query() {
-      this.form.validateFields((err, values) => {
+      this.searchForm.validateFields((err, values) => {
         if (!err) {
-          const para = {
-            title: values.searchLine,
-          };
-          judgement.queryAPI(para);
+          judgement.queryAPI(values)
+            .then((res) => {
+              // todo 条件查询 返回值
+              console.log(res);
+            })
+            .catch((e) => {
+              this.$message.error(e);
+            });
         }
       });
+    },
+    toCreate() {
+      this.formTitle = '新建条目';
+      this.visibility_commonModel = true;
+    },
+    toModify() {
+      this.formTitle = '修改条目';
+      this.visibility_commonModel = true;
+    },
+    handleModelOK() {
+      this.commonForm.validateFields((err, values) => {
+        if (!err) {
+          if (this.formTitle === '新建条目') {
+            judgement.createAPI(values)
+              .then((res) => {
+                // todo 创建 返回值
+                console.log(res);
+                if (res.data.retCode !== 0) {
+                  this.$message.info('创建成功');
+                  this.commonForm.setFieldsValue({ title: '', type: '', court: '', cause: '', file: [] });
+                  this.visibility_commonModel = false;
+                }
+              })
+              .catch((e) => {
+                this.$message.error(e);
+              });
+          } else if (this.formTitle === '修改条目') {
+            judgement.modifyAPI(values)
+              .then((res) => {
+                // todo 创建 返回值
+                console.log(res);
+                if (res.data.retCode !== 0) {
+                  this.$message.info('修改成功');
+                  this.commonForm.setFieldsValue({ title: '', type: '', court: '', cause: '', file: [] });
+                  this.visibility_commonModel = false;
+                }
+              })
+              .catch((e) => {
+                this.$message.error(e);
+              });
+          }
+        }
+      });
+    },
+    handleModelCancel() {
+      this.visibility_commonModel = false;
+    },
+    beforeUpload(file) {
+      this.fileList = [file];
+      this.uploadTip = '重新上传';
+      return false;
+    },
+    normFile(e) {
+      if (Array.isArray(e)) {
+        return e;
+      }
+      return e && [e.file];
+    },
+    del() {
+      judgement.deleteAPI(this.selectedRowKeys[0])
+        .then((res) => {
+          // todo 删除 返回值
+          console.log(res);
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
+    },
+    publish() {
+      judgement.publishAPI(this.selectedRowKeys[0])
+        .then((res) => {
+          // todo 发布 返回值
+          console.log(res);
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
+    },
+    modify() {
+      judgement.modifyAPI()
+        .then((res) => {
+          // todo 修改 返回值
+          console.log(res);
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
     },
   },
 };

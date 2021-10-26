@@ -49,5 +49,6 @@ module.exports = {
     'no-console': 'off',
     'no-plusplus': 'off',
     'linebreak-style': ["off", "windows"],
+    "max-len": ["error", { code: 200 }],
   }
 }
