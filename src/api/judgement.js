@@ -26,7 +26,7 @@ const judgement = {
   },
   // 发布裁判文书
   publishAPI(data) {
-    return axios.get('http://localhost:8081/api/judgement/publish', { params: { id: data } });
+    return axios.get(`http://localhost:8081/api/judgement/publish/${data}`);
   },
   // 修改裁判文书
   modifyAPI(data) {
