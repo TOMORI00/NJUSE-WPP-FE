@@ -8,27 +8,29 @@ import axios from '../request/http'; // 导入http中创建的axios实例
 const judgement = {
   // 分页获取文书
   getPageAPI(data) {
-    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/getPage', data);
+    return axios.post('http://localhost:8081/api/judgement/getPage', data);
   },
   // 按条件分页检索
   queryAPI(data) {
-    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/query', data);
+    return axios.post('http://localhost:8081/api/judgement/query', data);
   },
   // 新建裁判文书
   createAPI(data) {
-    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/create', data);
+    return axios.post('http://localhost:8081/api/judgement/create', data);
   },
   // 删除裁判文书
   deleteAPI(data) {
-    return axios.delete('http://127.0.0.1:4523/mock/441026/api/judgement/delete', { params: { id: data } });
+    console.log(data);
+    // return axios.delete('http://localhost:8081/api/judgement/delete', { params: { id: data } });
+    return axios.delete(`http://localhost:8081/api/judgement/delete/${data}`);
   },
   // 发布裁判文书
   publishAPI(data) {
-    return axios.get('http://127.0.0.1:4523/mock/441026/api/judgement/publish', { params: { id: data } });
+    return axios.get('http://localhost:8081/api/judgement/publish', { params: { id: data } });
   },
   // 修改裁判文书
   modifyAPI(data) {
-    return axios.post('http://127.0.0.1:4523/mock/441026/api/judgement/modify', data);
+    return axios.post('http://localhost:8081/api/judgement/modify', data);
   },
 };
 

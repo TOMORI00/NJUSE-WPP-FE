@@ -109,7 +109,7 @@ const formItemLayout = {
 const columns = [
   {
     title: '案件名称',
-    dataIndex: 'name',
+    dataIndex: 'title',
   },
   {
     title: '案件类型',
@@ -126,15 +126,7 @@ const columns = [
 ];
 // 假数据
 const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    name: `Edward King ${i}`,
-    type: 32,
-    court: `London, Park Lane no. ${i}`,
-    status: '未发布',
-  });
-}
+
 export default {
   data() {
     return {
@@ -152,7 +144,7 @@ export default {
     };
   },
   mounted() {
-    this.getPage(rowCount, 0);
+    this.getPage(6, rowCount);
   },
   methods: {
     onSelectChange(selectedRowKeys) {
@@ -167,8 +159,8 @@ export default {
       judgement.getPageAPI({ pageSize, pageNum })
         .then((res) => {
           // todo 分页查询 返回值
-          console.log(res.data.data);
-          this.data = res.data.data;
+          console.log(res);
+          this.data = res.data.data.docs;
         })
         .catch((e) => {
           this.$message.error(e);
@@ -246,7 +238,8 @@ export default {
       return e && [e.file];
     },
     del() {
-      judgement.deleteAPI(this.selectedRowKeys[0])
+      console.log(this.data);
+      judgement.deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
           // todo 删除 返回值
           console.log(res);
