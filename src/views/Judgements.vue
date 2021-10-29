@@ -2,23 +2,53 @@
   <div>
     <div>
       <a-form :form="searchForm" class="searchBar" layout="inline">
-        <a-form-item label="案件名称">
-          <a-input
-            v-decorator="[
-              'title',
-              {
-                rules: [{ required: true, message: '请输入案件名称' }],
-              },
-            ]"
-            style="width: 360px"
-          />
-        </a-form-item>
+        <div style="display: flex; justify-content: center; flex-direction: column">
+          <a-form-item :label="searchTitle">
+            <a-input
+              v-decorator="[
+                'title',
+                ]"
+              placeholder="请输入文书标题"
+              style="width: 300px;"
+            />
+          </a-form-item>
+          <a-form-item v-if="checked" :key="1" label="案件类型" style="margin-left: 15px">
+            <a-input
+              v-decorator="[
+                  'type',
+                ]"
+              placeholder="请输入案件类型"
+              style="width: 300px;"
+            />
+          </a-form-item>
+          <a-form-item v-if="checked" :key="2" label="法院名称" style="margin-left: 15px">
+            <a-input
+              v-decorator="[
+                  'court',
+                ]"
+              placeholder="请输入法院名称"
+              style="width: 300px;"
+            />
+          </a-form-item>
+          <a-form-item v-if="checked" :key="3" label="案由" style="margin-left: 43px">
+            <a-input
+              v-decorator="[
+                  'cause',
+                ]"
+              placeholder="请输入案由"
+              style="width: 300px;"
+            />
+          </a-form-item>
+        </div>
+        <span style="margin-top: 8px; font-size: small; color: #7b7bff">高级检索
+            <a-switch :checked="checked" style="margin-bottom: 4px" @change="handleCheckChange"/>
+        </span>
         <a-form-item
           :wrapper-col="formItemLayout.wrapperCol"
           style="margin-left: 30px"
         >
           <a-button type="primary" @click="query">
-            查询
+            检索
           </a-button>
         </a-form-item>
         <a-form-item :wrapper-col="formItemLayout.wrapperCol">
@@ -41,9 +71,9 @@
                  @cancel="handleModelCancel"
                  @ok="handleModelOK">
           <a-form :form="commonForm">
-            <a-form-item label="案件标题">
+            <a-form-item label="文书标题">
               <a-input v-decorator="[ 'title', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
-                       placeholder="请输入案件标题"/>
+                       placeholder="请输入文书标题"/>
             </a-form-item>
             <a-form-item label="案件类型">
               <a-input v-decorator="[ 'type', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
@@ -98,6 +128,8 @@
 <script>
 import judgement from '../api/judgement';
 
+const checked = false;
+const searchTitle = '按标题检索';
 const formTitle = '新建条目';
 const rowCount = 10;
 const uploadTip = '上传正文文件';
@@ -108,7 +140,7 @@ const formItemLayout = {
 };
 const columns = [
   {
-    title: '案件名称',
+    title: '文书标题',
     dataIndex: 'title',
   },
   {
@@ -130,6 +162,8 @@ const data = [];
 export default {
   data() {
     return {
+      checked,
+      searchTitle,
       formTitle,
       uploadTip,
       commonForm: this.$form.createForm(this, { name: 'judgementCreate' }),
@@ -268,6 +302,13 @@ export default {
           this.$message.error(e);
         });
     },
+    handleCheckChange() {
+      if (this.checked === true) {
+        this.checked = false;
+      } else {
+        this.checked = true;
+      }
+    },
   },
 };
 </script>
@@ -277,6 +318,6 @@ export default {
   display: flex;
   justify-content: center;
   margin-top: 3vh;
-  width: 710px;
+  width: 810px;
 }
 </style>
