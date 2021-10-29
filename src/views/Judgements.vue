@@ -28,43 +28,69 @@
         </a-form-item>
       </a-form>
     </div>
-    <a-divider/>
+    <a-divider />
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
         <a-button type="primary" @click="toCreate">
           新建
         </a-button>
-        <a-modal :title="formTitle"
-                 :visible="visibility_commonModel"
-                 cancel-text="取消"
-                 ok-text="确认"
-                 @cancel="handleModelCancel"
-                 @ok="handleModelOK">
+        <a-modal
+          :title="formTitle"
+          :visible="visibility_commonModel"
+          cancel-text="取消"
+          ok-text="确认"
+          @cancel="handleModelCancel"
+          @ok="handleModelOK"
+        >
           <a-form :form="commonForm">
             <a-form-item label="案件标题">
-              <a-input v-decorator="[ 'title', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
-                       placeholder="请输入案件标题"/>
+              <a-input
+                v-decorator="[
+                  'title',
+                  { rules: [{ required: true, message: '请输入案件名称' }] },
+                ]"
+                placeholder="请输入案件标题"
+              />
             </a-form-item>
             <a-form-item label="案件类型">
-              <a-input v-decorator="[ 'type', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
-                       placeholder="请输入案件类型"/>
+              <a-input
+                v-decorator="[
+                  'type',
+                  { rules: [{ required: true, message: '请输入案件名称' }] },
+                ]"
+                placeholder="请输入案件类型"
+              />
             </a-form-item>
             <a-form-item label="法院名称">
-              <a-input v-decorator="[ 'court', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
-                       placeholder="请输入法院名称"/>
+              <a-input
+                v-decorator="[
+                  'court',
+                  { rules: [{ required: true, message: '请输入案件名称' }] },
+                ]"
+                placeholder="请输入法院名称"
+              />
             </a-form-item>
             <a-form-item label="案由">
-              <a-input v-decorator="[ 'cause', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
-                       placeholder="请输入案由"/>
+              <a-input
+                v-decorator="[
+                  'cause',
+                  { rules: [{ required: true, message: '请输入案件名称' }] },
+                ]"
+                placeholder="请输入案由"
+              />
             </a-form-item>
             <a-form-item label="案件正文">
-              <a-upload v-decorator="[ 'file',{
-                          valuePropName: 'fileList',
-                          getValueFromEvent: normFile,
-                          rules: [{required: true, message: '请选择文件'}]
-                        } ]"
-                        :before-upload="beforeUpload"
-                        :show-upload-list="{showRemoveIcon:false}"
+              <a-upload
+                v-decorator="[
+                  'file',
+                  {
+                    valuePropName: 'fileList',
+                    getValueFromEvent: normFile,
+                    rules: [{ required: true, message: '请选择文件' }],
+                  },
+                ]"
+                :before-upload="beforeUpload"
+                :show-upload-list="{ showRemoveIcon: false }"
               >
                 <a-button>{{ uploadTip }}</a-button>
               </a-upload>
@@ -84,12 +110,15 @@
       <a-table
         :columns="columns"
         :data-source="data"
+        :loading="loading"
+        :pagination="pagination"
         :row-selection="{
           selectedRowKeys: selectedRowKeys,
           onChange: onSelectChange,
           type: 'radio',
         }"
-        :rowKey="(record,index)=>index"
+        :rowKey="(record, index) => index"
+        @change="handleTableChange"
       />
     </div>
   </div>
@@ -126,6 +155,14 @@ const columns = [
 ];
 // 假数据
 const data = [];
+for (let i = 0; i < 10; i++) {
+  data.push({
+    title: '123',
+    type: '123',
+    court: '123',
+    status: '未发布',
+  });
+}
 
 export default {
   data() {
@@ -141,6 +178,11 @@ export default {
       searchForm: this.$form.createForm(this, { name: 'judgementSearch' }),
       columns,
       selectedRowKeys: [], // Check here to configure the default column
+      loading: false,
+      pagination: {
+        defaultPageSize: 6,
+        total: 12,
+      },
     };
   },
   mounted() {
@@ -156,11 +198,15 @@ export default {
       });
     },
     getPage(pageSize, pageNum) {
-      judgement.getPageAPI({ pageSize, pageNum })
+      this.loading = true;
+      judgement
+        .getPageAPI({ pageSize, pageNum })
         .then((res) => {
           // todo 分页查询 返回值
           console.log(res);
           this.data = res.data.data.docs;
+          this.pagination.total = res.data.data.total;
+          this.loading = false;
         })
         .catch((e) => {
           this.$message.error(e);
@@ -169,7 +215,8 @@ export default {
     query() {
       this.searchForm.validateFields((err, values) => {
         if (!err) {
-          judgement.queryAPI(values)
+          judgement
+            .queryAPI(values)
             .then((res) => {
               // todo 条件查询 返回值
               console.log(res);
@@ -192,13 +239,20 @@ export default {
       this.commonForm.validateFields((err, values) => {
         if (!err) {
           if (this.formTitle === '新建条目') {
-            judgement.createAPI(values)
+            judgement
+              .createAPI(values)
               .then((res) => {
                 // todo 创建 返回值
                 console.log(res);
                 if (res.data.retCode !== 0) {
                   this.$message.info('创建成功');
-                  this.commonForm.setFieldsValue({ title: '', type: '', court: '', cause: '', file: [] });
+                  this.commonForm.setFieldsValue({
+                    title: '',
+                    type: '',
+                    court: '',
+                    cause: '',
+                    file: [],
+                  });
                   this.visibility_commonModel = false;
                 }
               })
@@ -206,13 +260,20 @@ export default {
                 this.$message.error(e);
               });
           } else if (this.formTitle === '修改条目') {
-            judgement.modifyAPI(values)
+            judgement
+              .modifyAPI(values)
               .then((res) => {
                 // todo 创建 返回值
                 console.log(res);
                 if (res.data.retCode !== 0) {
                   this.$message.info('修改成功');
-                  this.commonForm.setFieldsValue({ title: '', type: '', court: '', cause: '', file: [] });
+                  this.commonForm.setFieldsValue({
+                    title: '',
+                    type: '',
+                    court: '',
+                    cause: '',
+                    file: [],
+                  });
                   this.visibility_commonModel = false;
                 }
               })
@@ -239,7 +300,8 @@ export default {
     },
     del() {
       console.log(this.data);
-      judgement.deleteAPI(this.data[this.selectedRowKeys[0]].id)
+      judgement
+        .deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
           // todo 删除 返回值
           console.log(res);
@@ -249,7 +311,8 @@ export default {
         });
     },
     publish() {
-      judgement.publishAPI(this.selectedRowKeys[0])
+      judgement
+        .publishAPI(this.selectedRowKeys[0])
         .then((res) => {
           // todo 发布 返回值
           console.log(res);
@@ -259,7 +322,8 @@ export default {
         });
     },
     modify() {
-      judgement.modifyAPI()
+      judgement
+        .modifyAPI()
         .then((res) => {
           // todo 修改 返回值
           console.log(res);
@@ -267,6 +331,10 @@ export default {
         .catch((e) => {
           this.$message.error(e);
         });
+    },
+    handleTableChange(pagination, filters, sorter) {
+      console.log('hi', pagination, 'ha', filters, 'yyy', sorter);
+      this.getPage(6, pagination.current);
     },
   },
 };
