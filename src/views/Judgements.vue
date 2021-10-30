@@ -58,7 +58,7 @@
         </a-form-item>
       </a-form>
     </div>
-    <a-divider />
+    <a-divider/>
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
         <a-button type="primary" @click="toCreate">
@@ -155,7 +155,6 @@ import judgement from '../api/judgement';
 const checked = false;
 const searchTitle = '按标题检索';
 const formTitle = '新建条目';
-const rowCount = 10;
 const uploadTip = '上传正文文件';
 const fileList = [];
 const formItemLayout = {
@@ -215,7 +214,7 @@ export default {
     };
   },
   mounted() {
-    this.getPage(6, rowCount);
+    this.getPage(1);
   },
   methods: {
     onSelectChange(selectedRowKeys) {
@@ -226,8 +225,9 @@ export default {
         title: '',
       });
     },
-    getPage(pageSize, pageNum) {
+    getPage(pageNum) {
       this.loading = true;
+      const pageSize = this.pagination.defaultPageSize;
       judgement
         .getPageAPI({ pageSize, pageNum })
         .then((res) => {
