@@ -2,46 +2,60 @@
   <div>
     <div>
       <a-form :form="searchForm" class="searchBar" layout="inline">
-        <div style="display: flex; justify-content: center; flex-direction: column">
+        <div
+          style="display: flex; justify-content: center; flex-direction: column"
+        >
           <a-form-item :label="searchTitle">
             <a-input
-              v-decorator="[
-                'title',
-                ]"
+              v-decorator="['title']"
               placeholder="请输入文书标题"
               style="width: 300px;"
             />
           </a-form-item>
-          <a-form-item v-if="checked" :key="1" label="案件类型" style="margin-left: 15px">
+          <a-form-item
+            v-if="checked"
+            :key="1"
+            label="案件类型"
+            style="margin-left: 15px"
+          >
             <a-input
-              v-decorator="[
-                  'type',
-                ]"
+              v-decorator="['type']"
               placeholder="请输入案件类型"
               style="width: 300px;"
             />
           </a-form-item>
-          <a-form-item v-if="checked" :key="2" label="法院名称" style="margin-left: 15px">
+          <a-form-item
+            v-if="checked"
+            :key="2"
+            label="法院名称"
+            style="margin-left: 15px"
+          >
             <a-input
-              v-decorator="[
-                  'court',
-                ]"
+              v-decorator="['court']"
               placeholder="请输入法院名称"
               style="width: 300px;"
             />
           </a-form-item>
-          <a-form-item v-if="checked" :key="3" label="案由" style="margin-left: 43px">
+          <a-form-item
+            v-if="checked"
+            :key="3"
+            label="案由"
+            style="margin-left: 43px"
+          >
             <a-input
-              v-decorator="[
-                  'cause',
-                ]"
+              v-decorator="['cause']"
               placeholder="请输入案由"
               style="width: 300px;"
             />
           </a-form-item>
         </div>
-        <span style="margin-top: 8px; font-size: small; color: #7b7bff">高级检索
-            <a-switch :checked="checked" style="margin-bottom: 4px" @change="handleCheckChange"/>
+        <span style="margin-top: 8px; font-size: small; color: #7b7bff">
+          高级检索
+          <a-switch
+            :checked="checked"
+            style="margin-bottom: 4px"
+            @change="handleCheckChange"
+          />
         </span>
         <a-form-item
           :wrapper-col="formItemLayout.wrapperCol"
@@ -58,7 +72,7 @@
         </a-form-item>
       </a-form>
     </div>
-    <a-divider/>
+    <a-divider />
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
         <a-button type="primary" @click="toCreate">
@@ -74,8 +88,13 @@
         >
           <a-form :form="commonForm">
             <a-form-item label="文书标题">
-              <a-input v-decorator="[ 'title', { rules: [{ required: true, message: '请输入案件名称' }] } ]"
-                       placeholder="请输入文书标题"/>
+              <a-input
+                v-decorator="[
+                  'title',
+                  { rules: [{ required: true, message: '请输入案件名称' }] },
+                ]"
+                placeholder="请输入文书标题"
+              />
             </a-form-item>
             <a-form-item label="案件类型">
               <a-input
@@ -209,7 +228,7 @@ export default {
       loading: false,
       pagination: {
         defaultPageSize: 6,
-        total: 12,
+        total: 0,
       },
     };
   },
@@ -226,15 +245,15 @@ export default {
       });
     },
     getPage(pageNum) {
+      console.log('now page number: ', pageNum);
       this.loading = true;
       const pageSize = this.pagination.defaultPageSize;
       judgement
         .getPageAPI({ pageSize, pageNum })
         .then((res) => {
           // todo 分页查询 返回值
-          console.log(res);
-          this.data = res.data.data.docs;
-          this.pagination.total = res.data.data.total;
+          this.pagination.total = res.data.data.docs.totalNum;
+          this.data = res.data.data.docs.docs;
           this.loading = false;
         })
         .catch((e) => {
@@ -361,9 +380,8 @@ export default {
           this.$message.error(e);
         });
     },
-    handleTableChange(pagination, filters, sorter) {
-      console.log('hi', pagination, 'ha', filters, 'yyy', sorter);
-      this.getPage(6, pagination.current);
+    handleTableChange(pagination) {
+      this.getPage(pagination.current);
     },
     handleCheckChange() {
       if (this.checked === true) {
