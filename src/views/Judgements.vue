@@ -182,6 +182,8 @@ import {
 } from 'ant-design-vue';
 import judgement from '../api/judgement';
 
+const moment = require('moment');
+
 Vue.use(AModal);
 
 const checked = false;
@@ -286,7 +288,12 @@ export default {
     query() {
       this.searchForm.validateFields((err, values) => {
         if (!err) {
-          console.log('检索: ', values);
+          this.loading = true;
+          console.log('检索: ', {
+            ...values,
+            pageSize: 6,
+            pageNum: 1,
+          });
           judgement
             .queryAPI({
               values,
@@ -295,9 +302,10 @@ export default {
             })
             .then((res) => {
               // todo 条件查询 返回值
-              console.log(res);
-              this.data = res.data.data.docs;
-              console.log('查询后的data', this.data);
+              console.log('分页查询的结果', res);
+              this.pagination.total = res.data.data.docs.totalNum;
+              this.data = res.data.data.docs.docs;
+              this.loading = false;
             })
             .catch((e) => {
               this.$message.error(e);
@@ -316,9 +324,16 @@ export default {
     handleModelOK() {
       this.commonForm.validateFields((err, values) => {
         if (!err) {
+          console.log('创建项目的参数', {
+            ...values,
+            time: moment(this.nowDate).format('YYYY-MM-DD'),
+          });
           if (this.formTitle === '新建条目') {
             judgement
-              .createAPI(values)
+              .createAPI({
+                ...values,
+                time: moment(this.nowDate).format('YYYY-MM-DD'),
+              })
               .then((res) => {
                 // todo 创建 返回值
                 console.log(res);
