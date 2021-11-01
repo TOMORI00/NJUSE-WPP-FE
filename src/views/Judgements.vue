@@ -72,11 +72,20 @@
         </a-form-item>
       </a-form>
     </div>
-    <a-divider />
+    <a-divider/>
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
         <a-button type="primary" @click="toCreate">
           新建
+        </a-button>
+        <a-button type="primary" @click="toModify">
+          修改
+        </a-button>
+        <a-button type="primary" @click="del">
+          删除
+        </a-button>
+        <a-button type="primary" @click="publish">
+          发布
         </a-button>
         <a-modal
           :title="formTitle"
@@ -141,15 +150,6 @@
             </a-form-item>
           </a-form>
         </a-modal>
-        <a-button type="primary" @click="toModify">
-          修改
-        </a-button>
-        <a-button type="primary" @click="del">
-          删除
-        </a-button>
-        <a-button type="primary" @click="publish">
-          发布
-        </a-button>
       </div>
       <a-table
         :columns="columns"
@@ -171,20 +171,22 @@
 <script>
 import Vue from 'vue';
 import {
-  Form as AForm,
   Button as AButton,
-  Table as ATable,
-  Input as AInput,
-  Upload as AUpload,
-  Switch as ASwitch,
   Divider as ADivider,
+  Form as AForm,
+  Input as AInput,
+  message,
   Modal as AModal,
+  Switch as ASwitch,
+  Table as ATable,
+  Upload as AUpload,
 } from 'ant-design-vue';
 import judgement from '../api/judgement';
 
 const moment = require('moment');
 
 Vue.use(AModal);
+Vue.prototype.$message = message;
 
 const checked = false;
 const searchTitle = '按标题检索';
@@ -270,7 +272,7 @@ export default {
       });
     },
     getPage(pageNum) {
-      console.log('now page number: ', pageNum);
+      // console.log('now page number: ', pageNum);
       this.loading = true;
       const pageSize = this.pagination.defaultPageSize;
       judgement
@@ -335,10 +337,9 @@ export default {
                 time: moment(this.nowDate).format('YYYY-MM-DD'),
               })
               .then((res) => {
-                // todo 创建 返回值
-                console.log(res);
+                // console.log(res);
                 if (res.data.retCode !== 0) {
-                  this.$message.info('创建成功');
+                  this.$message.success('创建成功');
                   this.commonForm.setFieldsValue({
                     title: '',
                     type: '',
@@ -359,7 +360,7 @@ export default {
                 // todo 创建 返回值
                 console.log(res);
                 if (res.data.retCode !== 0) {
-                  this.$message.info('修改成功');
+                  this.$message.success('修改成功');
                   this.commonForm.setFieldsValue({
                     title: '',
                     type: '',
@@ -392,12 +393,16 @@ export default {
       return e && [e.file];
     },
     del() {
-      console.log(this.data);
+      // console.log(this.data);
       judgement
         .deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
           // todo 删除 返回值
-          console.log(res);
+          // console.log(res);
+          if (res.data.retCode !== 0) {
+            this.getPage(1);
+            this.$message.success('删除成功');
+          }
         })
         .catch((e) => {
           this.$message.error(e);
@@ -408,18 +413,11 @@ export default {
         .publishAPI(this.selectedRowKeys[0])
         .then((res) => {
           // todo 发布 返回值
-          console.log(res);
-        })
-        .catch((e) => {
-          this.$message.error(e);
-        });
-    },
-    modify() {
-      judgement
-        .modifyAPI()
-        .then((res) => {
-          // todo 修改 返回值
-          console.log(res);
+          // console.log(res);
+          if (res.data.retCode !== 0) {
+            this.getPage(1);
+            this.$message.success('发布成功');
+          }
         })
         .catch((e) => {
           this.$message.error(e);
