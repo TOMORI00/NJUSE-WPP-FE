@@ -51,10 +51,11 @@
 </template>
 
 <script>
+import { Layout as ALayout, Menu as AMenu, Icon as AIcon } from 'ant-design-vue';
+
 export default {
   data() {
-    return {
-    };
+    return {};
   },
   watch: {
     openKeys(val) {
@@ -65,6 +66,16 @@ export default {
     handleClick(e) {
       console.log(e);
     },
+  },
+  components: {
+    ALayout,
+    AMenu,
+    AMenuItem: AMenu.Item,
+    ASubMenu: AMenu.SubMenu,
+    ALayoutHeader: ALayout.Header,
+    ALayoutSider: ALayout.Sider,
+    ALayoutContent: ALayout.Content,
+    AIcon,
   },
 };
 </script>

@@ -169,6 +169,16 @@
 </template>
 
 <script>
+import {
+  Form as AForm,
+  Button as AButton,
+  Table as ATable,
+  Input as AInput,
+  Upload as AUpload,
+  Switch as ASwitch,
+  Modal as AModal,
+  Divider as ADivider,
+} from 'ant-design-vue';
 import judgement from '../api/judgement';
 
 const checked = false;
@@ -231,6 +241,17 @@ export default {
         total: 0,
       },
     };
+  },
+  components: {
+    AForm,
+    AButton,
+    ATable,
+    AInput,
+    AUpload,
+    ASwitch,
+    AModal,
+    ADivider,
+    AFormItem: AForm.Item,
   },
   mounted() {
     this.getPage(1);
