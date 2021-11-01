@@ -298,7 +298,7 @@ export default {
           });
           judgement
             .queryAPI({
-              values,
+              ...values,
               pageSize: 6,
               pageNum: 1,
             })
