@@ -284,11 +284,18 @@ export default {
     query() {
       this.searchForm.validateFields((err, values) => {
         if (!err) {
+          console.log('检索: ', values);
           judgement
-            .queryAPI(values)
+            .queryAPI({
+              values,
+              pageSize: 6,
+              pageNum: 1,
+            })
             .then((res) => {
               // todo 条件查询 返回值
               console.log(res);
+              this.data = res.data.data.docs;
+              console.log('查询后的data', this.data);
             })
             .catch((e) => {
               this.$message.error(e);
@@ -419,7 +426,7 @@ export default {
 .searchBar {
   display: flex;
   justify-content: center;
-  margin-top: 3vh;
+  margin-top: 4vh;
   width: 810px;
 }
 </style>
