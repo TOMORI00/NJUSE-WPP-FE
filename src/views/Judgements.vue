@@ -169,6 +169,7 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import {
   Form as AForm,
   Button as AButton,
@@ -176,10 +177,12 @@ import {
   Input as AInput,
   Upload as AUpload,
   Switch as ASwitch,
-  Modal as AModal,
   Divider as ADivider,
+  Modal as AModal,
 } from 'ant-design-vue';
 import judgement from '../api/judgement';
+
+Vue.use(AModal);
 
 const checked = false;
 const searchTitle = '按标题检索';
@@ -249,7 +252,6 @@ export default {
     AInput,
     AUpload,
     ASwitch,
-    AModal,
     ADivider,
     AFormItem: AForm.Item,
   },
