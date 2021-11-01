@@ -226,6 +226,14 @@ for (let i = 0; i < 10; i++) {
   });
 }
 
+const emptyForm = {
+  title: '',
+  type: '',
+  court: '',
+  cause: '',
+  file: [],
+};
+
 export default {
   data() {
     return {
@@ -272,13 +280,11 @@ export default {
       });
     },
     getPage(pageNum) {
-      // console.log('now page number: ', pageNum);
       this.loading = true;
       const pageSize = this.pagination.defaultPageSize;
       judgement
         .getPageAPI({ pageSize, pageNum })
         .then((res) => {
-          // todo 分页查询 返回值
           this.pagination.total = res.data.data.docs.totalNum;
           this.data = res.data.data.docs.docs;
           this.loading = false;
@@ -303,8 +309,6 @@ export default {
               pageNum: 1,
             })
             .then((res) => {
-              // todo 条件查询 返回值
-              console.log('分页查询的结果', res);
               this.pagination.total = res.data.data.docs.totalNum;
               this.data = res.data.data.docs.docs;
               this.loading = false;
@@ -326,53 +330,46 @@ export default {
     handleModelOK() {
       this.commonForm.validateFields((err, values) => {
         if (!err) {
-          console.log('创建项目的参数', {
+          const param = {
             ...values,
             time: moment(this.nowDate).format('YYYY-MM-DD'),
-          });
+          };
+          console.log('创建的参数:', param);
           if (this.formTitle === '新建条目') {
             judgement
-              .createAPI({
-                ...values,
-                time: moment(this.nowDate).format('YYYY-MM-DD'),
-              })
+              .createAPI(param)
               .then((res) => {
-                // console.log(res);
                 if (res.data.retCode !== 0) {
                   this.$message.success('创建成功');
-                  this.commonForm.setFieldsValue({
-                    title: '',
-                    type: '',
-                    court: '',
-                    cause: '',
-                    file: [],
-                  });
+                  this.commonForm.setFieldsValue(emptyForm);
                   this.visibility_commonModel = false;
+                } else {
+                  this.$message.warn('创建失败');
                 }
               })
               .catch((e) => {
                 this.$message.error(e);
+              })
+              .finally(() => {
+                this.getPage(1);
               });
           } else if (this.formTitle === '修改条目') {
             judgement
               .modifyAPI(values)
               .then((res) => {
-                // todo 创建 返回值
-                console.log(res);
                 if (res.data.retCode !== 0) {
                   this.$message.success('修改成功');
-                  this.commonForm.setFieldsValue({
-                    title: '',
-                    type: '',
-                    court: '',
-                    cause: '',
-                    file: [],
-                  });
+                  this.commonForm.setFieldsValue(emptyForm);
                   this.visibility_commonModel = false;
+                } else {
+                  this.$message.warn('修改失败');
                 }
               })
               .catch((e) => {
                 this.$message.error(e);
+              })
+              .finally(() => {
+                this.getPage(1);
               });
           }
         }
@@ -393,45 +390,44 @@ export default {
       return e && [e.file];
     },
     del() {
-      // console.log(this.data);
       judgement
         .deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
-          // todo 删除 返回值
-          // console.log(res);
           if (res.data.retCode !== 0) {
-            this.getPage(1);
             this.$message.success('删除成功');
+          } else {
+            this.$message.warn('删除失败');
           }
         })
         .catch((e) => {
           this.$message.error(e);
+        })
+        .finally(() => {
+          this.getPage(1);
         });
     },
     publish() {
       judgement
         .publishAPI(this.selectedRowKeys[0])
         .then((res) => {
-          // todo 发布 返回值
-          // console.log(res);
           if (res.data.retCode !== 0) {
-            this.getPage(1);
             this.$message.success('发布成功');
+          } else {
+            this.$message.warn('发布失败');
           }
         })
         .catch((e) => {
           this.$message.error(e);
+        })
+        .finally(() => {
+          this.getPage(1);
         });
     },
     handleTableChange(pagination) {
       this.getPage(pagination.current);
     },
     handleCheckChange() {
-      if (this.checked === true) {
-        this.checked = false;
-      } else {
-        this.checked = true;
-      }
+      this.checked = this.checked !== true;
     },
   },
 };
