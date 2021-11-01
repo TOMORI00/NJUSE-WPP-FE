@@ -43,7 +43,7 @@
             style="margin-left: 43px"
           >
             <a-input
-              v-decorator="['cause']"
+              v-decorator="['brief']"
               placeholder="请输入案由"
               style="width: 300px;"
             />
@@ -126,7 +126,7 @@
             <a-form-item label="案由">
               <a-input
                 v-decorator="[
-                  'cause',
+                  'brief',
                   { rules: [{ required: true, message: '请输入案件名称' }] },
                 ]"
                 placeholder="请输入案由"
@@ -230,7 +230,7 @@ const emptyForm = {
   title: '',
   type: '',
   court: '',
-  cause: '',
+  brief: '',
   file: [],
 };
 
@@ -286,7 +286,7 @@ export default {
         .getPageAPI({ pageSize, pageNum })
         .then((res) => {
           this.pagination.total = res.data.data.docs.totalNum;
-          this.data = res.data.data.docs.docs;
+          this.data = res.data.data.docs.documents;
           this.loading = false;
         })
         .catch((e) => {
@@ -310,7 +310,7 @@ export default {
             })
             .then((res) => {
               this.pagination.total = res.data.data.docs.totalNum;
-              this.data = res.data.data.docs.docs;
+              this.data = res.data.data.docs.documents;
               this.loading = false;
             })
             .catch((e) => {
@@ -332,14 +332,14 @@ export default {
         if (!err) {
           const param = {
             ...values,
-            time: moment(this.nowDate).format('YYYY-MM-DD'),
+            judge_date: moment(this.nowDate).format('YYYY-MM-DD'),
           };
           console.log('创建的参数:', param);
           if (this.formTitle === '新建条目') {
             judgement
               .createAPI(param)
               .then((res) => {
-                if (res.data.retCode !== 0) {
+                if (res.data.code === 200) {
                   this.$message.success('创建成功');
                   this.commonForm.setFieldsValue(emptyForm);
                   this.visibility_commonModel = false;
@@ -357,7 +357,7 @@ export default {
             judgement
               .modifyAPI(values)
               .then((res) => {
-                if (res.data.retCode !== 0) {
+                if (res.data.code === 200) {
                   this.$message.success('修改成功');
                   this.commonForm.setFieldsValue(emptyForm);
                   this.visibility_commonModel = false;
@@ -393,7 +393,7 @@ export default {
       judgement
         .deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
-          if (res.data.retCode !== 0) {
+          if (res.data.code === 200) {
             this.$message.success('删除成功');
           } else {
             this.$message.warn('删除失败');
@@ -410,7 +410,7 @@ export default {
       judgement
         .publishAPI(this.selectedRowKeys[0])
         .then((res) => {
-          if (res.data.retCode !== 0) {
+          if (res.data.code === 200) {
             this.$message.success('发布成功');
           } else {
             this.$message.warn('发布失败');
