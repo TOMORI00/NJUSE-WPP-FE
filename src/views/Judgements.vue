@@ -72,7 +72,7 @@
         </a-form-item>
       </a-form>
     </div>
-    <a-divider />
+    <a-divider/>
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
         <a-button type="primary" @click="toCreate">
@@ -182,7 +182,6 @@ import {
   Upload as AUpload,
 } from 'ant-design-vue';
 import judgement from '../api/judgement';
-import axios from '../request/http';
 
 const moment = require('moment');
 
@@ -351,76 +350,65 @@ export default {
     handleModelOK() {
       this.commonForm.validateFields((err, values) => {
         if (!err) {
-          const param = {
-            ...values,
-            judgeDate: moment(this.nowDate).format('YYYY-MM-DD'),
-          };
-          console.log('上传文件', param.file);
-          const formData = new FormData();
-          formData.append('file', param.file[0]);
-          const config = {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          };
-          let tempId = 0;
-          axios
-            .post(
-              'http://101.132.253.222:8081/api/judgement/upload',
-              formData,
-              config,
-            )
-            .then((res) => {
-              console.log('上传文件的返回结果', res);
-              if (res.status === 200) {
-                tempId = res.data.data.id;
-                console.log('上传文件后的id', tempId);
-              }
-            });
-          console.log('创建的参数:', param);
           if (this.formTitle === '新建条目') {
-            const { file, ...paramWithoutFile } = param;
-            console.log('创建文书的最终参数', {
-              ...paramWithoutFile,
-              id: tempId,
-            });
+            let tempId = 0;
+            const formData = new FormData();
+            formData.append('file', values.file[0]);
             judgement
-              .createAPI({
-                ...paramWithoutFile,
-                id: tempId,
-              })
+              .createUploadAPI(formData)
               .then((res) => {
-                if (res.data.code === 200) {
-                  this.$message.success('创建成功');
-                  this.commonForm.setFieldsValue(emptyForm);
-                  this.visibility_commonModel = false;
-                } else {
-                  this.$message.warn('创建失败');
+                if (res.status === 200) {
+                  tempId = res.data.data.id;
+                  const { file, ...paramWithoutFile } = {
+                    ...values,
+                    judgeDate: moment(this.nowDate).format('YYYY-MM-DD'),
+                    id: tempId,
+                  };
+                  judgement
+                    .createAPI(paramWithoutFile)
+                    .then((r) => {
+                      if (r.data.code === 200) {
+                        this.$message.success('创建成功');
+                        this.commonForm.setFieldsValue(emptyForm);
+                        this.visibility_commonModel = false;
+                      } else {
+                        this.$message.warn('创建失败');
+                      }
+                    })
+                    .catch((e) => {
+                      this.$message.error(e);
+                    })
+                    .finally(() => {
+                      this.getPage(1);
+                    });
                 }
-              })
-              .catch((e) => {
-                this.$message.error(e);
-              })
-              .finally(() => {
-                this.getPage(1);
               });
           } else if (this.formTitle === '修改条目') {
+            const formData = new FormData();
+            formData.append('file', values.file[0]);
             judgement
-              .modifyAPI(values)
+              .modifyUploadAPI(formData, this.data[this.selectedRowKeys[0]].id)
               .then((res) => {
-                if (res.data.code === 200) {
-                  this.$message.success('修改成功');
-                  this.commonForm.setFieldsValue(emptyForm);
-                  this.visibility_commonModel = false;
-                } else {
-                  this.$message.warn('修改失败');
+                if (res.status === 200) {
+                  const { file, ...paramWithoutFile } = { ...values, id: this.data[this.selectedRowKeys[0]].id };
+                  judgement
+                    .modifyAPI(paramWithoutFile)
+                    .then((r) => {
+                      if (r.data.code === 200) {
+                        this.$message.success('修改成功');
+                        this.commonForm.setFieldsValue(emptyForm);
+                        this.visibility_commonModel = false;
+                      } else {
+                        this.$message.warn('修改失败');
+                      }
+                    })
+                    .catch((e) => {
+                      this.$message.error(e);
+                    })
+                    .finally(() => {
+                      this.getPage(1);
+                    });
                 }
-              })
-              .catch((e) => {
-                this.$message.error(e);
-              })
-              .finally(() => {
-                this.getPage(1);
               });
           }
         }

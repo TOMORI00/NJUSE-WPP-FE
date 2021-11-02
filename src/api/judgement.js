@@ -33,6 +33,14 @@ const judgement = {
   modifyAPI(data) {
     return axios.post(`${baseURL}/modify`, data);
   },
+  // 新建上传文件
+  createUploadAPI(data) {
+    return axios.post(`${baseURL}/upload`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  // 修改上传文件
+  modifyUploadAPI(data, id) {
+    return axios.post(`${baseURL}/modifyFile/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 export default judgement;
