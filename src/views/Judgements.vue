@@ -446,7 +446,7 @@ export default {
       judgement
         .deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
-          if (res.data.code !== 0) {
+          if (res.data.code === 200) {
             this.$message.success('删除成功');
           } else {
             this.$message.warn('删除失败');

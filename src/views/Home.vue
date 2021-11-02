@@ -2,11 +2,7 @@
   <div id="components-layout-demo-basic">
     <a-layout>
       <a-layout-header>
-        <h3 class="title">裁判文书网</h3>
-        <img
-          src="https://ydl8023.oss-cn-beijing.aliyuncs.com/IMG_1297.JPG"
-          id="avator"
-        />
+        <h2 class="title">裁判文书网</h2>
       </a-layout-header>
       <a-layout>
         <a-layout-sider
@@ -76,7 +72,7 @@ export default {
 
 <style>
 #components-layout-demo-basic .ant-layout-header {
-  background-color: rgb(248, 236, 236);
+  background-color: #041527;
   height: 8vh;
   position: relative;
 }
@@ -101,5 +97,6 @@ export default {
   left: 36px;
   top: 50%;
   transform: translateY(-50%);
+  color: #fff;
 }
 </style>
