@@ -9,6 +9,7 @@
             <a-input
               v-decorator="['title']"
               placeholder="请输入文书标题"
+              aria-multiline="true"
               style="width: 300px;"
             />
           </a-form-item>
@@ -97,7 +98,7 @@
         >
           <a-form :form="commonForm">
             <a-form-item label="文书标题">
-              <a-input
+              <a-textarea
                 v-decorator="[
                   'title',
                   { rules: [{ required: true, message: '请输入案件名称' }] },
@@ -200,7 +201,7 @@ const formItemLayout = {
 const columns = [
   {
     title: 'id',
-    dataIndex: 'id',
+    dataIndex: 'keyId',
   },
   {
     title: '案件标题',
@@ -264,6 +265,7 @@ export default {
     AUpload,
     ASwitch,
     ADivider,
+    ATextarea: AInput.TextArea,
     AFormItem: AForm.Item,
   },
   mounted() {
@@ -296,6 +298,7 @@ export default {
             status: o.status === '0' ? '未发布' : '已发布',
           }));
           this.loading = false;
+          console.log(this.data);
         })
         .catch((e) => {
           this.$message.error(e);
@@ -342,10 +345,31 @@ export default {
     toCreate() {
       this.formTitle = '新建条目';
       this.visibility_commonModel = true;
+      this.$nextTick(() => {
+        setTimeout(() => {
+          this.commonForm.setFieldsValue(emptyForm);
+        });
+      });
     },
     toModify() {
-      this.formTitle = '修改条目';
-      this.visibility_commonModel = true;
+      if (this.selectedRowKeys[0] === undefined) {
+        message.warn('请选择条目');
+      } else {
+        this.formTitle = '修改条目';
+        this.uploadTip = '重新上传';
+        this.visibility_commonModel = true;
+        this.$nextTick(() => {
+          setTimeout(() => {
+            this.commonForm.setFieldsValue({
+              title: this.data[this.selectedRowKeys[0]].title,
+              type: this.data[this.selectedRowKeys[0]].type,
+              court: this.data[this.selectedRowKeys[0]].court,
+              brief: this.data[this.selectedRowKeys[0]].brief,
+              file: [],
+            });
+          });
+        });
+      }
     },
     handleModelOK() {
       this.commonForm.validateFields((err, values) => {
@@ -387,10 +411,10 @@ export default {
             const formData = new FormData();
             formData.append('file', values.file[0]);
             judgement
-              .modifyUploadAPI(formData, this.data[this.selectedRowKeys[0]].id)
+              .modifyUploadAPI(formData, this.data[this.selectedRowKeys[0]].keyId)
               .then((res) => {
                 if (res.status === 200) {
-                  const { file, ...paramWithoutFile } = { ...values, id: this.data[this.selectedRowKeys[0]].id };
+                  const { file, ...paramWithoutFile } = { ...values, id: this.data[this.selectedRowKeys[0]].keyId };
                   judgement
                     .modifyAPI(paramWithoutFile)
                     .then((r) => {
@@ -430,7 +454,7 @@ export default {
     },
     del() {
       judgement
-        .deleteAPI(this.data[this.selectedRowKeys[0]].id)
+        .deleteAPI(this.data[this.selectedRowKeys[0]].keyId)
         .then((res) => {
           if (res.data.code === 200) {
             this.$message.success('删除成功');
@@ -448,7 +472,7 @@ export default {
     },
     publish() {
       judgement
-        .publishAPI(this.data[this.selectedRowKeys[0]].id)
+        .publishAPI(this.data[this.selectedRowKeys[0]].keyId)
         .then((res) => {
           if (res.data.code === 200) {
             this.$message.success('发布成功');
