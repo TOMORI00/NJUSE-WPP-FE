@@ -4,8 +4,8 @@
 
 import axios from '../request/http'; // 导入http中创建的axios实例
 
-// const baseURL = 'http://101.132.253.222:8081/api/judgement';
-const baseURL = 'http://localhost:8081/api/judgement';
+const baseURL = 'http://101.132.253.222:8081/api/judgement';
+// const baseURL = 'http://localhost:8081/api/judgement';
 
 const judgement = {
   // 分页获取文书

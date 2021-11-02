@@ -414,7 +414,7 @@ export default {
               .modifyUploadAPI(formData, this.data[this.selectedRowKeys[0]].keyId)
               .then((res) => {
                 if (res.status === 200) {
-                  const { file, ...paramWithoutFile } = { ...values, id: this.data[this.selectedRowKeys[0]].keyId };
+                  const { file, ...paramWithoutFile } = { ...values, keyId: this.data[this.selectedRowKeys[0]].keyId };
                   judgement
                     .modifyAPI(paramWithoutFile)
                     .then((r) => {
