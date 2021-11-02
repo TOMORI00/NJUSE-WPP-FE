@@ -8,8 +8,8 @@
           <a-form-item :label="searchTitle">
             <a-input
               v-decorator="['title']"
-              placeholder="请输入文书标题"
               aria-multiline="true"
+              placeholder="请输入文书标题"
               style="width: 300px;"
             />
           </a-form-item>
@@ -164,7 +164,22 @@
         }"
         :rowKey="(record, index) => index"
         @change="handleTableChange"
-      />
+      >
+        <div slot="expandedRowRender" slot-scope="record" class="expandedRow">
+          <div class="subExpandedRow">
+            <strong style="margin-left: 3.5vh">案由：</strong>
+            <p>{{ record.brief }}</p>
+          </div>
+          <div class="subExpandedRow">
+            <strong style="margin-left: 3.5vh">日期：</strong>
+            <p>{{ record.judgeDate }}</p>
+          </div>
+          <div class="subExpandedRow">
+            <strong>文书内容：</strong>
+            <p>{{ record.content }}</p>
+          </div>
+        </div>
+      </a-table>
     </div>
   </div>
 </template>
@@ -200,10 +215,6 @@ const formItemLayout = {
 };
 const columns = [
   {
-    title: 'id',
-    dataIndex: 'keyId',
-  },
-  {
     title: '案件标题',
     dataIndex: 'title',
   },
@@ -220,7 +231,7 @@ const columns = [
     dataIndex: 'status',
   },
 ];
-// 假数据
+
 const data = [];
 
 const emptyForm = {
@@ -404,6 +415,7 @@ export default {
                     })
                     .finally(() => {
                       this.getPage(1);
+                      this.$set(this.pagination, 'current', 1);
                     });
                 }
               });
@@ -431,6 +443,7 @@ export default {
                     })
                     .finally(() => {
                       this.getPage(1);
+                      this.$set(this.pagination, 'current', 1);
                     });
                 }
               });
@@ -468,6 +481,7 @@ export default {
         .finally(() => {
           this.getPage(1);
           this.onSelectChange([]);
+          this.$set(this.pagination, 'current', 1);
         });
     },
     publish() {
@@ -485,31 +499,31 @@ export default {
         })
         .finally(() => {
           this.getPage(1);
+          this.$set(this.pagination, 'current', 1);
         });
     },
     handleTableChange(pagination) {
       // 如果是默认的结果
       if (!this.searchStatus) {
         this.getPage(pagination.current);
-        return;
+      } else {
+        // 按条件检索
+        this.searchCondition.pageNum = pagination.current;
+        judgement
+          .queryAPI(this.searchCondition)
+          .then((res) => {
+            this.pagination.total = res.data.data.docs.totalNum;
+            this.data = res.data.data.docs.documents.map((o) => ({
+              ...o,
+              status: o.status === '0' ? '未发布' : '已发布',
+            }));
+            this.$set(this.pagination, 'current', pagination.current);
+            this.loading = false;
+          })
+          .catch((e) => {
+            this.$message.error(e);
+          });
       }
-      // 按条件检索
-      this.searchCondition.pageNum = pagination.current;
-      judgement
-        .queryAPI(this.searchCondition)
-        .then((res) => {
-          this.pagination.total = res.data.data.docs.totalNum;
-          this.data = res.data.data.docs.documents.map((o) => ({
-            ...o,
-            status: o.status === '0' ? '未发布' : '已发布',
-          }));
-          this.$set(this.pagination, 'current', pagination.current);
-          this.loading = false;
-        })
-        .catch((e) => {
-          this.$message.error(e);
-        });
-      this.pagination.current = 1;
     },
     handleCheckChange() {
       this.checked = this.checked !== true;
@@ -524,5 +538,20 @@ export default {
   justify-content: center;
   margin-top: 4vh;
   width: 810px;
+}
+
+.expandedRow {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  white-space: pre-line;
+}
+
+.subExpandedRow {
+  display: flex;
+}
+
+strong {
+  white-space: nowrap;
 }
 </style>
