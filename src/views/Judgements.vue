@@ -392,7 +392,7 @@ export default {
             judgement
               .createAPI(param)
               .then((res) => {
-                if (res.data.retCode !== 0) {
+                if (res.data.code === 200) {
                   this.$message.success('创建成功');
                   this.commonForm.setFieldsValue(emptyForm);
                   this.visibility_commonModel = false;
@@ -410,7 +410,7 @@ export default {
             judgement
               .modifyAPI(values)
               .then((res) => {
-                if (res.data.retCode !== 0) {
+                if (res.data.code === 200) {
                   this.$message.success('修改成功');
                   this.commonForm.setFieldsValue(emptyForm);
                   this.visibility_commonModel = false;
@@ -464,7 +464,7 @@ export default {
       judgement
         .publishAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
-          if (res.data.code !== 0) {
+          if (res.data.code === 200) {
             this.$message.success('发布成功');
           } else {
             this.$message.warn('发布失败');
