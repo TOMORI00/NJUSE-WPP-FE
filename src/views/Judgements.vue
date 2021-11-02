@@ -200,6 +200,10 @@ const formItemLayout = {
 };
 const columns = [
   {
+    title: 'id',
+    dataIndex: 'id',
+  },
+  {
     title: '案件标题',
     dataIndex: 'title',
   },
@@ -217,67 +221,7 @@ const columns = [
   },
 ];
 // 假数据
-const data = [
-  {
-    brief: '借款合同纠纷 ',
-    court: '太原市中级人民法院',
-    id: 1,
-    judgeDate: {},
-    status: '0',
-    title:
-      '山西当代红华房地产开发有限公司与中信银行股份有限公司太原分行、李志鹏等借款合同纠纷二审民事裁定书',
-    type: '民事案件',
-  },
-  {
-    brief: '金融借款合同纠纷 ',
-    court: '江苏省张家港市人民法院',
-    id: 2,
-    judgeDate: {},
-    status: '0',
-    title:
-      '江苏张家港农村商业银行股份有限公司与孟兴、王小允金融借款合同纠纷执行裁定书',
-    type: '执行案件',
-  },
-  {
-    brief: '金融借款合同纠纷 ',
-    court: '贵州省贵阳市中级人民法院',
-    id: 333,
-    judgeDate: {},
-    status: '0',
-    title:
-      '浙越资产管理有限公司、招商银行股份有限公司贵阳分行金融借款合同纠纷执行审查类执行裁定书',
-    type: '执行案件',
-  },
-  {
-    brief: '金融借款合同纠纷 ',
-    court: '筠连县人民法院',
-    id: 4214,
-    judgeDate: {},
-    status: '0',
-    title:
-      '中国邮政储蓄银行股份有限公司筠连县支行与冯章连、陈静金融借款合同纠纷一审民事判决书',
-    type: '民事案件',
-  },
-  {
-    brief: '金融借款合同纠纷 ',
-    court: '江苏省常熟市人民法院',
-    id: 345,
-    judgeDate: {},
-    status: '0',
-    title: '中国建设银行股份有限公司常熟分行与匡槿金融借款合同纠纷执行裁定书',
-    type: '执行案件',
-  },
-  {
-    brief: '借款合同纠纷 ',
-    court: '宽城满族自治县人民法院',
-    id: 6,
-    judgeDate: {},
-    status: '0',
-    title:
-      '河北宽城农村商业银行股份有限公司、王淑芹借款合同纠纷执行实施类执行裁定书',
-    type: '执行案件',
-  },
-];
+const data = [];
 
 const emptyForm = {
   title: '',
@@ -306,8 +250,11 @@ export default {
       loading: false,
       pagination: {
         defaultPageSize: 6,
+        defaultCurrent: 1,
         total: 0,
       },
+      searchStatus: false,
+      searchCondition: {},
     };
   },
   components: {
@@ -330,7 +277,13 @@ export default {
     resetSearchLine() {
       this.searchForm.setFieldsValue({
         title: '',
+        type: '',
+        court: '',
+        judgeDate: '',
       });
+      this.searchStatus = false;
+      this.getPage(1);
+      this.$set(this.pagination, 'current', 1);
     },
     getPage(pageNum) {
       this.loading = true;
@@ -350,16 +303,30 @@ export default {
         });
     },
     query() {
+      this.searchStatus = true;
       this.searchForm.validateFields((err, values) => {
         if (!err) {
           this.loading = true;
+          const tempValue = values;
+          for (const key of Object.keys(tempValue)) {
+            if (tempValue[key] === '') {
+              tempValue[key] = undefined;
+            }
+          }
+          this.searchCondition = {
+            ...tempValue,
+            pageSize: 6,
+            pageNum: 1,
+          };
           judgement
             .queryAPI({
-              ...values,
+              ...tempValue,
               pageSize: 6,
               pageNum: 1,
             })
             .then((res) => {
+              // 不能直接写this.pagination.current = 1; 由于Vue不能动态的检测到对象属性变化所致
+              this.$set(this.pagination, 'current', 1);
               this.pagination.total = res.data.data.docs.totalNum;
               this.data = res.data.data.docs.documents.map((o) => ({
                 ...o,
@@ -509,7 +476,28 @@ export default {
         });
     },
     handleTableChange(pagination) {
-      this.getPage(pagination.current);
+      // 如果是默认的结果
+      if (!this.searchStatus) {
+        this.getPage(pagination.current);
+        return;
+      }
+      // 按条件检索
+      this.searchCondition.pageNum = pagination.current;
+      judgement
+        .queryAPI(this.searchCondition)
+        .then((res) => {
+          this.pagination.total = res.data.data.docs.totalNum;
+          this.data = res.data.data.docs.documents.map((o) => ({
+            ...o,
+            status: o.status === '0' ? '未发布' : '已发布',
+          }));
+          this.$set(this.pagination, 'current', pagination.current);
+          this.loading = false;
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
+      this.pagination.current = 1;
     },
     handleCheckChange() {
       this.checked = this.checked !== true;

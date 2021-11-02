@@ -50,6 +50,7 @@ module.exports = {
     'no-plusplus': 'off',
     'no-unused-vars': 'off',
     'arrow-parens': 'off',
+    'no-restricted-syntax': 'off',
     'linebreak-style': ["off", "windows"],
     "max-len": ["error", { code: 200 }],
   }
