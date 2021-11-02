@@ -39,12 +39,12 @@
           <a-form-item
             v-if="checked"
             :key="3"
-            label="案由"
+            label="时间"
             style="margin-left: 43px"
           >
             <a-input
-              v-decorator="['cause']"
-              placeholder="请输入案由"
+              v-decorator="['judgeDate']"
+              placeholder="请输入案件时间,格式为yyyy-mm-dd"
               style="width: 300px;"
             />
           </a-form-item>
@@ -72,7 +72,7 @@
         </a-form-item>
       </a-form>
     </div>
-    <a-divider/>
+    <a-divider />
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
         <a-button type="primary" @click="toCreate">
@@ -126,7 +126,7 @@
             <a-form-item label="案由">
               <a-input
                 v-decorator="[
-                  'cause',
+                  'brief',
                   { rules: [{ required: true, message: '请输入案件名称' }] },
                 ]"
                 placeholder="请输入案由"
@@ -199,7 +199,7 @@ const formItemLayout = {
 };
 const columns = [
   {
-    title: '文书标题',
+    title: '案件标题',
     dataIndex: 'title',
   },
   {
@@ -216,21 +216,73 @@ const columns = [
   },
 ];
 // 假数据
-const data = [];
-for (let i = 0; i < 10; i++) {
-  data.push({
-    title: '123',
-    type: '123',
-    court: '123',
-    status: '未发布',
-  });
-}
+const data = [
+  {
+    brief: '借款合同纠纷 ',
+    court: '太原市中级人民法院',
+    id: 1,
+    judgeDate: {},
+    status: '0',
+    title:
+      '山西当代红华房地产开发有限公司与中信银行股份有限公司太原分行、李志鹏等借款合同纠纷二审民事裁定书',
+    type: '民事案件',
+  },
+  {
+    brief: '金融借款合同纠纷 ',
+    court: '江苏省张家港市人民法院',
+    id: 2,
+    judgeDate: {},
+    status: '0',
+    title:
+      '江苏张家港农村商业银行股份有限公司与孟兴、王小允金融借款合同纠纷执行裁定书',
+    type: '执行案件',
+  },
+  {
+    brief: '金融借款合同纠纷 ',
+    court: '贵州省贵阳市中级人民法院',
+    id: 333,
+    judgeDate: {},
+    status: '0',
+    title:
+      '浙越资产管理有限公司、招商银行股份有限公司贵阳分行金融借款合同纠纷执行审查类执行裁定书',
+    type: '执行案件',
+  },
+  {
+    brief: '金融借款合同纠纷 ',
+    court: '筠连县人民法院',
+    id: 4214,
+    judgeDate: {},
+    status: '0',
+    title:
+      '中国邮政储蓄银行股份有限公司筠连县支行与冯章连、陈静金融借款合同纠纷一审民事判决书',
+    type: '民事案件',
+  },
+  {
+    brief: '金融借款合同纠纷 ',
+    court: '江苏省常熟市人民法院',
+    id: 345,
+    judgeDate: {},
+    status: '0',
+    title: '中国建设银行股份有限公司常熟分行与匡槿金融借款合同纠纷执行裁定书',
+    type: '执行案件',
+  },
+  {
+    brief: '借款合同纠纷 ',
+    court: '宽城满族自治县人民法院',
+    id: 6,
+    judgeDate: {},
+    status: '0',
+    title:
+      '河北宽城农村商业银行股份有限公司、王淑芹借款合同纠纷执行实施类执行裁定书',
+    type: '执行案件',
+  },
+];
 
 const emptyForm = {
   title: '',
   type: '',
   court: '',
-  cause: '',
+  brief: '',
   file: [],
 };
 
@@ -286,7 +338,10 @@ export default {
         .getPageAPI({ pageSize, pageNum })
         .then((res) => {
           this.pagination.total = res.data.data.docs.totalNum;
-          this.data = res.data.data.docs.docs;
+          this.data = res.data.data.docs.documents.map((o) => ({
+            ...o,
+            status: o.status === '0' ? '未发布' : '已发布',
+          }));
           this.loading = false;
         })
         .catch((e) => {
@@ -297,11 +352,6 @@ export default {
       this.searchForm.validateFields((err, values) => {
         if (!err) {
           this.loading = true;
-          console.log('检索: ', {
-            ...values,
-            pageSize: 6,
-            pageNum: 1,
-          });
           judgement
             .queryAPI({
               ...values,
@@ -310,7 +360,10 @@ export default {
             })
             .then((res) => {
               this.pagination.total = res.data.data.docs.totalNum;
-              this.data = res.data.data.docs.docs;
+              this.data = res.data.data.docs.documents.map((o) => ({
+                ...o,
+                status: o.status === '0' ? '未发布' : '已发布',
+              }));
               this.loading = false;
             })
             .catch((e) => {
@@ -332,7 +385,7 @@ export default {
         if (!err) {
           const param = {
             ...values,
-            time: moment(this.nowDate).format('YYYY-MM-DD'),
+            judge_date: moment(this.nowDate).format('YYYY-MM-DD'),
           };
           console.log('创建的参数:', param);
           if (this.formTitle === '新建条目') {
@@ -393,7 +446,7 @@ export default {
       judgement
         .deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
-          if (res.data.retCode !== 0) {
+          if (res.data.code !== 0) {
             this.$message.success('删除成功');
           } else {
             this.$message.warn('删除失败');
@@ -404,13 +457,14 @@ export default {
         })
         .finally(() => {
           this.getPage(1);
+          this.onSelectChange([]);
         });
     },
     publish() {
       judgement
-        .publishAPI(this.selectedRowKeys[0])
+        .publishAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
-          if (res.data.retCode !== 0) {
+          if (res.data.code !== 0) {
             this.$message.success('发布成功');
           } else {
             this.$message.warn('发布失败');

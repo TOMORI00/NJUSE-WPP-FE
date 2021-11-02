@@ -31,12 +31,6 @@
               <a-menu-item key="1">
                 裁判文书库
               </a-menu-item>
-              <a-menu-item key="2">
-                行政处罚管理
-              </a-menu-item>
-              <a-menu-item key="3">
-                违规案例搜索
-              </a-menu-item>
             </a-sub-menu>
           </a-menu>
         </a-layout-sider>
