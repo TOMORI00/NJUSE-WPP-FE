@@ -182,6 +182,7 @@ import {
   Upload as AUpload,
 } from 'ant-design-vue';
 import judgement from '../api/judgement';
+import axios from '../request/http';
 
 const moment = require('moment');
 
@@ -385,12 +386,42 @@ export default {
         if (!err) {
           const param = {
             ...values,
-            judge_date: moment(this.nowDate).format('YYYY-MM-DD'),
+            judgeDate: moment(this.nowDate).format('YYYY-MM-DD'),
           };
+          console.log('上传文件', param.file);
+          const formData = new FormData();
+          formData.append('file', param.file[0]);
+          const config = {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          };
+          let tempId = 0;
+          axios
+            .post(
+              'http://101.132.253.222:8081/api/judgement/upload',
+              formData,
+              config,
+            )
+            .then((res) => {
+              console.log('上传文件的返回结果', res);
+              if (res.status === 200) {
+                tempId = res.data.data.id;
+                console.log('上传文件后的id', tempId);
+              }
+            });
           console.log('创建的参数:', param);
           if (this.formTitle === '新建条目') {
+            const { file, ...paramWithoutFile } = param;
+            console.log('创建文书的最终参数', {
+              ...paramWithoutFile,
+              id: tempId,
+            });
             judgement
-              .createAPI(param)
+              .createAPI({
+                ...paramWithoutFile,
+                id: tempId,
+              })
               .then((res) => {
                 if (res.data.code === 200) {
                   this.$message.success('创建成功');

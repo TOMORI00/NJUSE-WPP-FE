@@ -19,7 +19,7 @@ const judgement = {
   },
   // 新建裁判文书
   createAPI(data) {
-    return axios.post(`${baseURL}/create`, data);
+    return axios.post(`${baseURL}/createById`, data);
   },
   // 删除裁判文书
   deleteAPI(data) {
