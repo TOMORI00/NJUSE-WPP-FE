@@ -43,7 +43,7 @@
             style="margin-left: 43px"
           >
             <a-input
-              v-decorator="['judgeDate']"
+              v-decorator="['judge_date']"
               placeholder="请输入案件时间,格式为yyyy-mm-dd"
               style="width: 300px;"
             />
@@ -278,7 +278,7 @@ export default {
         title: '',
         type: '',
         court: '',
-        judgeDate: '',
+        judge_date: '',
       });
       this.searchStatus = false;
       this.getPage(1);
@@ -361,7 +361,7 @@ export default {
                   tempId = res.data.data.id;
                   const { file, ...paramWithoutFile } = {
                     ...values,
-                    judgeDate: moment(this.nowDate).format('YYYY-MM-DD'),
+                    judge_date: moment(this.nowDate).format('YYYY-MM-DD'),
                     id: tempId,
                   };
                   judgement
