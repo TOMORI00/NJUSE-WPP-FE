@@ -503,6 +503,7 @@ export default {
         });
     },
     handleTableChange(pagination) {
+      this.$set(this.pagination, 'current', pagination.current);
       // 如果是默认的结果
       if (!this.searchStatus) {
         this.getPage(pagination.current);
