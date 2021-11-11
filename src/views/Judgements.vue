@@ -499,6 +499,7 @@ export default {
         })
         .finally(() => {
           this.getPage(1);
+          this.onSelectChange([]);
           this.$set(this.pagination, 'current', 1);
         });
     },
