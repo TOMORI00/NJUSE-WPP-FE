@@ -4,8 +4,8 @@
 
 import axios from '../request/http'; // 导入http中创建的axios实例
 
-const baseURL = 'http://101.132.253.222:8081/api/judgement';
-// const baseURL = 'http://localhost:8081/api/judgement';
+// const baseURL = 'http://101.132.253.222:8081/api/judgement';
+const baseURL = 'http://localhost:8081/api/judgement';
 
 const judgement = {
   // 分页获取文书
@@ -18,7 +18,7 @@ const judgement = {
   },
   // 新建裁判文书
   createAPI(data) {
-    return axios.post(`${baseURL}/createById`, data);
+    return axios.post(`${baseURL}/upload`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
   // 删除裁判文书
   deleteAPI(data) {
@@ -29,15 +29,7 @@ const judgement = {
     return axios.get(`${baseURL}/publish/${data}`);
   },
   // 修改裁判文书
-  modifyAPI(data) {
-    return axios.post(`${baseURL}/modify`, data);
-  },
-  // 新建上传文件
-  createUploadAPI(data) {
-    return axios.post(`${baseURL}/upload`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
-  },
-  // 修改上传文件
-  modifyUploadAPI(data, id) {
+  modifyAPI(data, id) {
     return axios.post(`${baseURL}/modifyFile/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
 };

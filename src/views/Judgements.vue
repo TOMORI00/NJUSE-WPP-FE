@@ -109,7 +109,7 @@
             </a-form-item>
             <a-form-item label="案件正文">
               <a-upload
-                v-decorator="['transcript', {
+                v-decorator="['file', {
                   valuePropName: 'fileList',
                   getValueFromEvent: normFile,
                   rules: [{ required: true, message: '请选择文件' }]
@@ -232,26 +232,37 @@ const columns = [
   {
     title: '案件类型',
     dataIndex: 'type',
+    sorter: (a, b) => a.type.localeCompare(b.type),
   },
   {
     title: '涉案银行名称',
     dataIndex: 'bank',
+    sorter: (a, b) => a.bank.localeCompare(b.bank),
   },
   {
     title: '银行涉诉身份',
     dataIndex: 'bankCharacter',
+    sorter: (a, b) => a.bankCharacter.localeCompare(b.bankCharacter),
   },
   {
     title: '判决结果分类',
     dataIndex: 'judgementType',
+    sorter: (a, b) => a.judgementType.localeCompare(b.judgementType),
   },
   {
     title: '案件年份',
     dataIndex: 'occurrenceYear',
+    sorter: (a, b) => a.occurrenceYear.localeCompare(b.occurrenceYear),
   },
   {
     title: '裁判日期',
     dataIndex: 'judgementDate',
+    sorter: (a, b) => a.judgementDate.localeCompare(b.judgementDate),
+  },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    sorter: (a, b) => a.status.localeCompare(b.status),
   },
 ];
 const data = [
@@ -273,6 +284,7 @@ const data = [
     judgementDate: 'yyyy-mm-dd',
     occurrenceYear: '1234',
     transcript: 'aaabbbcccdddeeefff1',
+    status: '未发布',
   },
   {
     id: 2,
@@ -292,6 +304,7 @@ const data = [
     judgementDate: 'yyyy-mm-dd',
     occurrenceYear: '1234',
     transcript: 'aaabbbcccdddeeefff2',
+    status: '未发布',
   },
   {
     id: 3,
@@ -311,6 +324,7 @@ const data = [
     judgementDate: 'yyyy-mm-dd',
     occurrenceYear: '1234',
     transcript: 'aaabbbcccdddeeefff3',
+    status: '未发布',
   },
 ];
 const emptyForm = {
@@ -329,7 +343,7 @@ const emptyForm = {
   basis: '',
   judgementDate: '',
   occurrenceYear: '',
-  transcript: [],
+  file: [],
 };
 
 export default {
@@ -401,7 +415,6 @@ export default {
             status: o.status === '0' ? '未发布' : '已发布',
           }));
           this.loading = false;
-          console.log(this.data);
         })
         .catch((e) => {
           this.$message.error(e);
@@ -467,7 +480,18 @@ export default {
               title: this.data[this.selectedRowKeys[0]].title,
               type: this.data[this.selectedRowKeys[0]].type,
               court: this.data[this.selectedRowKeys[0]].court,
-              brief: this.data[this.selectedRowKeys[0]].brief,
+              accuser: this.data[this.selectedRowKeys[0]].accuser,
+              defendant: this.data[this.selectedRowKeys[0]].defendant,
+              bank: this.data[this.selectedRowKeys[0]].bank,
+              bankCharacter: this.data[this.selectedRowKeys[0]].bankCharacter,
+              cause: this.data[this.selectedRowKeys[0]].cause,
+              judgement: this.data[this.selectedRowKeys[0]].judgement,
+              judgementType: this.data[this.selectedRowKeys[0]].judgementType,
+              measure: this.data[this.selectedRowKeys[0]].measure,
+              amount: this.data[this.selectedRowKeys[0]].amount,
+              basis: this.data[this.selectedRowKeys[0]].basis,
+              judgementDate: this.data[this.selectedRowKeys[0]].judgementDate,
+              occurrenceYear: this.data[this.selectedRowKeys[0]].occurrenceYear,
               file: [],
             });
           });
@@ -478,66 +502,48 @@ export default {
       this.commonForm.validateFields((err, values) => {
         if (!err) {
           if (this.formTitle === '新建条目') {
-            let tempId = 0;
             const formData = new FormData();
             formData.append('file', values.file[0]);
+            formData.append('otherParams', values);
             judgement
-              .createUploadAPI(formData)
-              .then((res) => {
-                if (res.status === 200) {
-                  tempId = res.data.data.id;
-                  const { file, ...paramWithoutFile } = {
-                    ...values,
-                    judge_date: moment(this.nowDate).format('YYYY-MM-DD'),
-                    id: tempId,
-                  };
-                  judgement
-                    .createAPI(paramWithoutFile)
-                    .then((r) => {
-                      if (r.data.code === 200) {
-                        this.$message.success('创建成功');
-                        this.commonForm.setFieldsValue(emptyForm);
-                        this.visibility_commonModel = false;
-                      } else {
-                        this.$message.warn('创建失败');
-                      }
-                    })
-                    .catch((e) => {
-                      this.$message.error(e);
-                    })
-                    .finally(() => {
-                      this.getPage(1);
-                      this.$set(this.pagination, 'current', 1);
-                    });
+              .createAPI(formData)
+              .then((r) => {
+                if (r.data.code === 200) {
+                  this.$message.success('创建成功');
+                  this.commonForm.setFieldsValue(emptyForm);
+                  this.visibility_commonModel = false;
+                } else {
+                  this.$message.warn('创建失败');
                 }
+              })
+              .catch((e) => {
+                this.$message.error(e);
+              })
+              .finally(() => {
+                this.getPage(1);
+                this.$set(this.pagination, 'current', 1);
               });
           } else if (this.formTitle === '修改条目') {
             const formData = new FormData();
             formData.append('file', values.file[0]);
+            formData.append('otherParams', values);
             judgement
-              .modifyUploadAPI(formData, this.data[this.selectedRowKeys[0]].keyId)
-              .then((res) => {
-                if (res.status === 200) {
-                  const { file, ...paramWithoutFile } = { ...values, keyId: this.data[this.selectedRowKeys[0]].keyId };
-                  judgement
-                    .modifyAPI(paramWithoutFile)
-                    .then((r) => {
-                      if (r.data.code === 200) {
-                        this.$message.success('修改成功');
-                        this.commonForm.setFieldsValue(emptyForm);
-                        this.visibility_commonModel = false;
-                      } else {
-                        this.$message.warn('修改失败');
-                      }
-                    })
-                    .catch((e) => {
-                      this.$message.error(e);
-                    })
-                    .finally(() => {
-                      this.getPage(1);
-                      this.$set(this.pagination, 'current', 1);
-                    });
+              .modifyAPI(formData)
+              .then((r) => {
+                if (r.data.code === 200) {
+                  this.$message.success('修改成功');
+                  this.commonForm.setFieldsValue(emptyForm);
+                  this.visibility_commonModel = false;
+                } else {
+                  this.$message.warn('修改失败');
                 }
+              })
+              .catch((e) => {
+                this.$message.error(e);
+              })
+              .finally(() => {
+                this.getPage(1);
+                this.$set(this.pagination, 'current', 1);
               });
           }
         }
@@ -625,321 +631,8 @@ export default {
   },
 };
 </script>
-<!--<script>-->
-<!--import Vue from 'vue';-->
-<!--import {-->
-<!--  Button as AButton,-->
-<!--  Divider as ADivider,-->
-<!--  message,-->
-<!--  Modal as AModal,-->
-<!--  Table as ATable,-->
-<!--} from 'ant-design-vue';-->
-<!--import judgement from '../api/judgement';-->
-<!--import SearchLine from '../components/SearchLine';-->
-<!--import CommonModal from '../components/CommonModal';-->
-
-<!--Vue.use(AModal);-->
-<!--Vue.prototype.$message = message;-->
-
-<!--const formTitle = '新建条目';-->
-<!--const fileList = [];-->
-<!--const columns = [-->
-<!--  {-->
-<!--    title: '案件标题',-->
-<!--    dataIndex: 'title',-->
-<!--    sorter: (a, b) => a.title.localeCompare(b.title),-->
-<!--  },-->
-<!--  {-->
-<!--    title: '案件类型',-->
-<!--    dataIndex: 'type',-->
-<!--  },-->
-<!--  {-->
-<!--    title: '涉案银行名称',-->
-<!--    dataIndex: 'bank',-->
-<!--  },-->
-<!--  {-->
-<!--    title: '银行涉诉身份',-->
-<!--    dataIndex: 'bankCharacter',-->
-<!--  },-->
-<!--  {-->
-<!--    title: '判决结果分类',-->
-<!--    dataIndex: 'judgementType',-->
-<!--  },-->
-<!--  {-->
-<!--    title: '案件年份',-->
-<!--    dataIndex: 'occurrenceYear',-->
-<!--  },-->
-<!--  {-->
-<!--    title: '裁判日期',-->
-<!--    dataIndex: 'judgementDate',-->
-<!--  },-->
-<!--];-->
-<!--const data = [-->
-<!--  {-->
-<!--    title: 'xxx',-->
-<!--    type: '1',-->
-<!--    court: 'yyy',-->
-<!--    accuser: 'a',-->
-<!--    defendant: 'b',-->
-<!--    bank: 'zzz',-->
-<!--    bankCharacter: '2',-->
-<!--    cause: 'abc',-->
-<!--    judgement: 'def',-->
-<!--    judgementType: '3',-->
-<!--    measure: 'ghi',-->
-<!--    amount: '123',-->
-<!--    basis: 'jkl',-->
-<!--    judgementDate: 'yyyy-mm-dd',-->
-<!--    occurrenceYear: '1234',-->
-<!--    transcript: 'aaabbbcccdddeeefff',-->
-<!--  },-->
-<!--  {-->
-<!--    title: 'xxy',-->
-<!--    type: '1',-->
-<!--    court: 'yyy',-->
-<!--    accuser: 'a',-->
-<!--    defendant: 'b',-->
-<!--    bank: 'zzz',-->
-<!--    bankCharacter: '2',-->
-<!--    cause: 'abc',-->
-<!--    judgement: 'def',-->
-<!--    judgementType: '3',-->
-<!--    measure: 'ghi',-->
-<!--    amount: '123',-->
-<!--    basis: 'jkl',-->
-<!--    judgementDate: 'yyyy-mm-dd',-->
-<!--    occurrenceYear: '1234',-->
-<!--    transcript: 'aaabbbcccdddeeefff',-->
-<!--  },-->
-<!--  {-->
-<!--    title: 'xxz',-->
-<!--    type: '1',-->
-<!--    court: 'yyy',-->
-<!--    accuser: 'a',-->
-<!--    defendant: 'b',-->
-<!--    bank: 'zzz',-->
-<!--    bankCharacter: '2',-->
-<!--    cause: 'abc',-->
-<!--    judgement: 'def',-->
-<!--    judgementType: '3',-->
-<!--    measure: 'ghi',-->
-<!--    amount: '123',-->
-<!--    basis: 'jkl',-->
-<!--    judgementDate: 'yyyy-mm-dd',-->
-<!--    occurrenceYear: '1234',-->
-<!--    transcript: 'aaabbbcccdddeeefff',-->
-<!--  },-->
-<!--];-->
-<!--const emptyForm = {-->
-<!--  title: '',-->
-<!--  type: '',-->
-<!--  court: '',-->
-<!--  accuser: '',-->
-<!--  defendant: '',-->
-<!--  bank: '',-->
-<!--  bankCharacter: '',-->
-<!--  cause: '',-->
-<!--  judgement: '',-->
-<!--  judgementType: '',-->
-<!--  measure: '',-->
-<!--  amount: '',-->
-<!--  basis: '',-->
-<!--  judgementDate: '',-->
-<!--  occurrenceYear: '',-->
-<!--  transcript: [],-->
-<!--};-->
-
-<!--export default {-->
-<!--  data() {-->
-<!--    return {-->
-<!--      data,-->
-<!--      fileList,-->
-<!--      caseName: '',-->
-<!--      visibility_commonModel: false,-->
-<!--      formTitle,-->
-<!--      commonForm: this.$form.createForm(this, { name: 'judgementCreate' }),-->
-<!--      emptyForm,-->
-<!--      searchForm: this.$form.createForm(this, { name: 'judgementSearch' }),-->
-<!--      columns,-->
-<!--      selectedRowKeys: [], // Check here to configure the default column-->
-<!--      loading: false,-->
-<!--      transcriptVisible: false,-->
-<!--      pagination: {-->
-<!--        defaultPageSize: 6,-->
-<!--        defaultCurrent: 1,-->
-<!--        total: 0,-->
-<!--      },-->
-<!--      searchStatus: false,-->
-<!--      searchCondition: {},-->
-<!--    };-->
-<!--  },-->
-<!--  components: {-->
-<!--    CommonModal,-->
-<!--    SearchLine,-->
-<!--    AButton,-->
-<!--    ATable,-->
-<!--    ADivider,-->
-<!--  },-->
-<!--  mounted() {-->
-<!--    this.getPage(1);-->
-<!--  },-->
-<!--  methods: {-->
-<!--    onSelectChange(selectedRowKeys) {-->
-<!--      this.selectedRowKeys = selectedRowKeys;-->
-<!--    },-->
-<!--    getPage(pageNum) {-->
-<!--      // this.loading = true;-->
-<!--      const pageSize = this.pagination.defaultPageSize;-->
-<!--      judgement-->
-<!--        .getPageAPI({ pageSize, pageNum })-->
-<!--        .then((res) => {-->
-<!--          this.pagination.total = res.data.data.docs.totalNum;-->
-<!--          this.data = res.data.data.docs.documents.map((o) => ({-->
-<!--            ...o,-->
-<!--            status: o.status === '0' ? '未发布' : '已发布',-->
-<!--          }));-->
-<!--          this.loading = false;-->
-<!--          console.log(this.data);-->
-<!--        })-->
-<!--        .catch((e) => {-->
-<!--          this.$message.error(e);-->
-<!--        });-->
-<!--    },-->
-<!--    query() {-->
-<!--      this.searchStatus = true;-->
-<!--      this.searchForm.validateFields((err, values) => {-->
-<!--        if (!err) {-->
-<!--          this.loading = true;-->
-<!--          const tempValue = values;-->
-<!--          for (const key of Object.keys(tempValue)) {-->
-<!--            if (tempValue[key] === '') {-->
-<!--              tempValue[key] = undefined;-->
-<!--            }-->
-<!--          }-->
-<!--          this.searchCondition = {-->
-<!--            ...tempValue,-->
-<!--            pageSize: 6,-->
-<!--            pageNum: 1,-->
-<!--          };-->
-<!--          judgement-->
-<!--            .queryAPI({-->
-<!--              ...tempValue,-->
-<!--              pageSize: 6,-->
-<!--              pageNum: 1,-->
-<!--            })-->
-<!--            .then((res) => {-->
-<!--              // 不能直接写this.pagination.current = 1; 由于Vue不能动态的检测到对象属性变化所致-->
-<!--              this.$set(this.pagination, 'current', 1);-->
-<!--              this.pagination.total = res.data.data.docs.totalNum;-->
-<!--              this.data = res.data.data.docs.documents.map((o) => ({-->
-<!--                ...o,-->
-<!--                status: o.status === '0' ? '未发布' : '已发布',-->
-<!--              }));-->
-<!--              this.loading = false;-->
-<!--            })-->
-<!--            .catch((e) => {-->
-<!--              this.$message.error(e);-->
-<!--            });-->
-<!--        }-->
-<!--      });-->
-<!--    },-->
-<!--    toCreate() {-->
-<!--      this.formTitle = '新建条目';-->
-<!--      this.visibility_commonModel = true;-->
-<!--      this.$nextTick(() => {-->
-<!--        setTimeout(() => {-->
-<!--          this.commonForm.setFieldsValue(emptyForm);-->
-<!--        });-->
-<!--      });-->
-<!--    },-->
-<!--    toModify() {-->
-<!--      if (this.selectedRowKeys[0] === undefined) {-->
-<!--        message.warn('请选择条目');-->
-<!--      } else {-->
-<!--        this.formTitle = '修改条目';-->
-<!--        this.uploadTip = '重新上传';-->
-<!--        this.visibility_commonModel = true;-->
-<!--        this.$nextTick(() => {-->
-<!--          setTimeout(() => {-->
-<!--            this.commonForm.setFieldsValue({-->
-<!--              title: this.data[this.selectedRowKeys[0]].title,-->
-<!--              type: this.data[this.selectedRowKeys[0]].type,-->
-<!--              court: this.data[this.selectedRowKeys[0]].court,-->
-<!--              brief: this.data[this.selectedRowKeys[0]].brief,-->
-<!--              file: [],-->
-<!--            });-->
-<!--          });-->
-<!--        });-->
-<!--      }-->
-<!--    },-->
-<!--    del() {-->
-<!--      judgement-->
-<!--        .deleteAPI(this.data[this.selectedRowKeys[0]].keyId)-->
-<!--        .then((res) => {-->
-<!--          if (res.data.code === 200) {-->
-<!--            this.$message.success('删除成功');-->
-<!--          } else {-->
-<!--            this.$message.warn('删除失败');-->
-<!--          }-->
-<!--        })-->
-<!--        .catch((e) => {-->
-<!--          this.$message.error(e);-->
-<!--        })-->
-<!--        .finally(() => {-->
-<!--          this.getPage(1);-->
-<!--          this.onSelectChange([]);-->
-<!--          this.$set(this.pagination, 'current', 1);-->
-<!--        });-->
-<!--    },-->
-<!--    publish() {-->
-<!--      judgement-->
-<!--        .publishAPI(this.data[this.selectedRowKeys[0]].keyId)-->
-<!--        .then((res) => {-->
-<!--          if (res.data.code === 200) {-->
-<!--            this.$message.success('发布成功');-->
-<!--          } else {-->
-<!--            this.$message.warn('发布失败');-->
-<!--          }-->
-<!--        })-->
-<!--        .catch((e) => {-->
-<!--          this.$message.error(e);-->
-<!--        })-->
-<!--        .finally(() => {-->
-<!--          this.getPage(1);-->
-<!--          this.onSelectChange([]);-->
-<!--          this.$set(this.pagination, 'current', 1);-->
-<!--        });-->
-<!--    },-->
-<!--    handleTableChange(pagination) {-->
-<!--      this.$set(this.pagination, 'current', pagination.current);-->
-<!--      // 如果是默认的结果-->
-<!--      if (!this.searchStatus) {-->
-<!--        this.getPage(pagination.current);-->
-<!--      } else {-->
-<!--        // 按条件检索-->
-<!--        this.searchCondition.pageNum = pagination.current;-->
-<!--        judgement-->
-<!--          .queryAPI(this.searchCondition)-->
-<!--          .then((res) => {-->
-<!--            this.pagination.total = res.data.data.docs.totalNum;-->
-<!--            this.data = res.data.data.docs.documents.map((o) => ({-->
-<!--              ...o,-->
-<!--              status: o.status === '0' ? '未发布' : '已发布',-->
-<!--            }));-->
-<!--            this.$set(this.pagination, 'current', pagination.current);-->
-<!--            this.loading = false;-->
-<!--          })-->
-<!--          .catch((e) => {-->
-<!--            this.$message.error(e);-->
-<!--          });-->
-<!--      }-->
-<!--    },-->
-<!--  },-->
-<!--};-->
-<!--</script>-->
 
 <style>
-
 .expandedRow {
   margin-left: 60px;
   display: flex;
