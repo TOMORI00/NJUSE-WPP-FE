@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SearchLine></SearchLine>
+    <SearchLine @query="query" :search-form="searchForm"></SearchLine>
     <a-divider/>
     <div>
       <div style="margin-bottom: 16px; margin-left: 3vw;">
@@ -225,6 +225,11 @@ const formItemLayout = {
 };
 const columns = [
   {
+    title: 'id',
+    dataIndex: 'id',
+    sorter: (a, b) => a.title.localeCompare(b.title),
+  },
+  {
     title: '案件标题',
     dataIndex: 'title',
     sorter: (a, b) => a.title.localeCompare(b.title),
@@ -404,7 +409,7 @@ export default {
       this.$set(this.pagination, 'current', 1);
     },
     getPage(pageNum) {
-      // this.loading = true;
+      this.loading = true;
       const pageSize = this.pagination.defaultPageSize;
       judgement
         .getPageAPI({ pageSize, pageNum })
@@ -504,7 +509,14 @@ export default {
           if (this.formTitle === '新建条目') {
             const formData = new FormData();
             formData.append('file', values.file[0]);
-            formData.append('otherParams', values);
+            // eslint-disable-next-line no-param-reassign
+            values.file = [];
+            for (const i of Object.keys(values)) {
+              if (i !== 'file') {
+                formData.append(i, values[i]);
+              }
+            }
+            // formData.append('otherParams', JSON.stringify(values));
             judgement
               .createAPI(formData)
               .then((r) => {
@@ -565,7 +577,7 @@ export default {
     },
     del() {
       judgement
-        .deleteAPI(this.data[this.selectedRowKeys[0]].keyId)
+        .deleteAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
           if (res.data.code === 200) {
             this.$message.success('删除成功');
@@ -583,8 +595,9 @@ export default {
         });
     },
     publish() {
+      console.log(this.data[this.selectedRowKeys[0]]);
       judgement
-        .publishAPI(this.data[this.selectedRowKeys[0]].keyId)
+        .publishAPI(this.data[this.selectedRowKeys[0]].id)
         .then((res) => {
           if (res.data.code === 200) {
             this.$message.success('发布成功');

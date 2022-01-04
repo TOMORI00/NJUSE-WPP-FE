@@ -51,10 +51,13 @@ export default {
     ASwitch,
     AFormItem: AForm.Item,
   },
+  props: {
+    searchForm: Object,
+  },
   data() {
     return {
       checked: false,
-      searchForm: this.$form.createForm(this, { name: 'judgementSearch' }),
+      // searchForm: this.$form.createForm(this, { name: 'judgementSearch' }),
       searchLabel: '文书检索',
       formItemLayout: {
         labelCol: { span: 4 },

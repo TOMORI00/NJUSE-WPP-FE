@@ -30,7 +30,7 @@ const judgement = {
   },
   // 修改裁判文书
   modifyAPI(data, id) {
-    return axios.post(`${baseURL}/modifyFile/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return axios.post(`${baseURL}/modify/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
 };
 
